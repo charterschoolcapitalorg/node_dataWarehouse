@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>DataWarehouse_skrel</title>
+</head>
+
+<body>
+    <h3>Step 1 - Upload Files</h3>
+    <label style="color:tomato; font-style:italic;" > &nbsp;&nbsp;&nbsp;&nbsp; <%= errorMessage %> </label>
+
+    <!-- Step 1 -->
+    <!-- CCD Data -->
+    <br />
+    <form id="postfile" method="POST" action="/postfile" enctype="multipart/form-data">
+        <label> CCD: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+        <input type="file" name="file" />
+        <input type="submit" />
+        <label style="color:tomato; font-style:italic;" > &nbsp;&nbsp;&nbsp;&nbsp; <%= successMessageCCD %> </label>
+    </form>
+
+    <!-- CCD Enrollment Data -->
+    <br />
+    <form id="postfile" method="POST" action="/postfile" enctype="multipart/form-data">
+        <label> CCD: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+        <input type="file" name="file" />
+        <input type="submit" />
+        <label style="color:tomato; font-style:italic;" > &nbsp;&nbsp;&nbsp;&nbsp; <%= successMessageCCDEnrollment %> </label>
+    </form>
+
+    <!-- Reonomy Data -->
+    <br />
+    <form id="postfilereonomy" method="POST" action="/postfile" enctype="multipart/form-data">
+        <label> Reonomy: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+        <input type="file" name="file" />
+        <input type="submit"/>
+        <label style="color:tomato; font-style:italic;" > &nbsp;&nbsp;&nbsp;&nbsp; <%= successMessageReonomy %> </label>
+    </form>
+    <!-- Sate Funding Data -->
+    <br />
+    <form id="postfilestfund" method="POST" action="/postfilestfund" enctype="multipart/form-data">
+        <label> State Funding:&nbsp;</label>
+        <input type="file" name="file" />
+        <input type="submit" disabled/>
+    </form>
+    <!-- CoStar Data -->
+    <br />
+    <form id="postfilecostar" method="POST" action="/postfilecostar" enctype="multipart/form-data">
+        <label> CoStar: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+        <input type="file" name="file" />
+        <input type="submit" disabled/>
+    </form>
+
+
+
+    <br />
+    <h3>Step 2 - Generate LLDB</h3>
+    <form id="lldbgen" method="POST" action="/lldbgen" enctype="multipart/form-data">
+        <input type="text" name="state" placeholder="Enter state"/>
+        <input type="text" name="revenue" placeholder="Enter revenue"/> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <input type="submit" disabled/>
+    </form>
+
+    <br />
+    <h3>Step 3 - Generate LLDB</h3>
+    <form id="lldbupload" method="POST" action="/lldbupload" enctype="multipart/form-data">
+        <label> LLDB: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+        <input type="file" name="file" />
+        <input type="submit" disabled/>
+    </form>
+
+</body>
+
+</html>
