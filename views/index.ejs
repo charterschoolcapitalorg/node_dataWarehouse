@@ -55,14 +55,32 @@
 
     <br />
     <h3>Step 2 - Generate LLDB</h3>
-    <form id="lldbgen" method="POST" action="/lldbgen" enctype="multipart/form-data">
-        <input type="text" name="state" placeholder="Enter state"/>
-        <input type="text" name="revenue" placeholder="Enter revenue"/> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <input type="submit" disabled/>
+    <form id="lldbgen" method="GET" action="/datafromsql" enctype="multipart/form-data">
+        <select id="state" name="state">
+            <option value="al">AL</option>
+            <option value="az">AZ</option>
+            <option value="ca">CA</option>
+            <option value="nm">NM</option>
+            <option value="mo">MO</option>
+            <option value="oh">OH</option>
+            <option value="in">IN</option>
+            <option value="il">IL</option>
+            <option value="tx">TX</option>
+            <option value="fl">FL</option>
+            <option value="ny">NY</option>
+            <option value="ut">UT</option>
+            <option value="co">CO</option>
+        
+        <input type="text" name="revenue" placeholder="Enter revenue"/> 
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <input type="submit" value="Generate"/>
+        <label style="color:rgb(6, 195, 0); font-style:italic;" > &nbsp;&nbsp;&nbsp;&nbsp; <%= successFileSave %> </label>
     </form>
 
     <br />
-    <h3>Step 3 - Generate LLDB</h3>
+    <h3>Step 3 - Upload LLDB</h3>
     <form id="lldbupload" method="POST" action="/lldbupload" enctype="multipart/form-data">
         <label> LLDB: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
         <input type="file" name="file" />
