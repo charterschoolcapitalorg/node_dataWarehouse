@@ -3,89 +3,167 @@
 
 <head>
     <title>DataWarehouse_skrel</title>
+    <style>
+        div.header {
+            width: 500px;
+            margin: auto;
+            border: 2px solid #73AD21;
+            border-radius: 10px;
+            background-color: rgb(151, 255, 255);
+        }
+
+        h3 {
+            padding: 2px;
+            text-align: center;
+        }
+
+        div.content {
+            width: 500px;
+            margin: auto;
+            padding: 10px;
+        }
+
+        label.step2 {
+            margin: 10px;
+        }
+    </style>
 </head>
 
 <body>
-    <h3>Step 1 - Upload Files</h3>
-    <label style="color:tomato; font-style:italic;" > &nbsp;&nbsp;&nbsp;&nbsp; <%= errorMessage %> </label>
+    <div class="header">
+        <h3>Step 1 - Upload Files</h3>
+    </div>
+    <br />
+
+    <label style="color:tomato; font-style:italic;"> &nbsp;&nbsp;&nbsp;&nbsp; <%= errorMessage %> </label>
 
     <!-- Step 1 -->
-    <!-- CCD Data -->
+    
     <br />
-    <form id="postfile" method="POST" action="/postfile" enctype="multipart/form-data">
-        <label> CCD: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
-        <input type="file" name="file" />
-        <input type="submit" />
-        <label style="color:tomato; font-style:italic;" > &nbsp;&nbsp;&nbsp;&nbsp; <%= successMessageCCD %> </label>
-    </form>
+    <div class="content">
 
-    <!-- CCD Enrollment Data -->
-    <br />
-    <form id="postfile" method="POST" action="/postfile" enctype="multipart/form-data">
-        <label> CCD: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
-        <input type="file" name="file" />
-        <input type="submit" />
-        <label style="color:tomato; font-style:italic;" > &nbsp;&nbsp;&nbsp;&nbsp; <%= successMessageCCDEnrollment %> </label>
-    </form>
+        <!-- CCD Data -->
+        <form id="postfile" method="POST" action="/postfile" enctype="multipart/form-data">
+            <label> CCD:
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+            <input type="file" name="file" />
+            <input type="submit" />
+            <label style="color:tomato; font-style:italic;"> &nbsp;&nbsp;&nbsp;&nbsp; <%= successMessageCCD %> </label>
+        </form>
+        <!-- display last update -->
+        <p style="margin-top: -1px; font-size: 12px; color:blue">Last update: <%= ccdLastUpdateToDisplay %> </p>
+    
 
-    <!-- Reonomy Data -->
-    <br />
-    <form id="postfilereonomy" method="POST" action="/postfile" enctype="multipart/form-data">
-        <label> Reonomy: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
-        <input type="file" name="file" />
-        <input type="submit"/>
-        <label style="color:tomato; font-style:italic;" > &nbsp;&nbsp;&nbsp;&nbsp; <%= successMessageReonomy %> </label>
-    </form>
-    <!-- Sate Funding Data -->
-    <br />
-    <form id="postfilestfund" method="POST" action="/postfilestfund" enctype="multipart/form-data">
-        <label> State Funding:&nbsp;</label>
-        <input type="file" name="file" />
-        <input type="submit" disabled/>
-    </form>
-    <!-- CoStar Data -->
-    <br />
-    <form id="postfilecostar" method="POST" action="/postfilecostar" enctype="multipart/form-data">
-        <label> CoStar: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
-        <input type="file" name="file" />
-        <input type="submit" disabled/>
-    </form>
+        <!-- CCD Enrollment Data -->
+        <br />
+        <form id="postfile" method="POST" action="/postfile" enctype="multipart/form-data">
+            <label> CCD Enrollment: &nbsp;</label>
+            <input type="file" name="file" />
+            <input type="submit" />
+            <label style="color:tomato; font-style:italic;"> &nbsp;&nbsp;&nbsp;&nbsp; <%= successMessageCCDEnrollment %>
+            </label>
+        </form>
+        <!-- display last update -->
+        <p style="margin-top: -1px; font-size: 12px; color:blue">Last update: <%= ccdEnrLastUpdateToDisplay %></p>
+    
 
+        <!-- Reonomy Data -->
+        <br />
+        <form id="postfilereonomy" method="POST" action="/postfile" enctype="multipart/form-data">
+            <label> Reonomy: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+            <input type="file" name="file" />
+            <input type="submit" />
+            <label style="color:tomato; font-style:italic;"> &nbsp;&nbsp;&nbsp;&nbsp; <%= successMessageReonomy %> </label>
+        </form>
+        <!-- display last update -->
+        <p style="margin-top: -1px; font-size: 12px; color:blue">Last update: <%= reonomyLastUpdateToDisplay %></p>
+    
 
+        <!-- Sate Funding Data -->
+        <br />
+        <form id="postfilestfund" method="POST" action="/postfilestfund" enctype="multipart/form-data">
+            <label> State Funding:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+            <input type="file" name="file" />
+            <input type="submit" disabled />
+        </form>
+        <!-- display last update -->
+        <p style="margin-top: -1px; font-size: 12px; color:blue">Last update: undefind</p>
+    
+        <!-- CoStar Data -->
+        <br />
+        <form id="postfilecostar" method="POST" action="/postfile" enctype="multipart/form-data">
+            <label>
+                CoStar:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+            <input type="file" name="file" />
+            <input type="submit" />
+            <label style="color:tomato; font-style:italic;"> &nbsp;&nbsp;&nbsp;&nbsp; <%= successMessageCostar %> </label>
+        </form>
+        <!-- display last update -->
+        <p style="margin-top: -1px; font-size: 12px; color:blue">Last update: <%= costarLastUpdateToDisplay %></p>
+    </div>
 
-    <br />
-    <h3>Step 2 - Generate LLDB</h3>
-    <form id="lldbgen" method="GET" action="/datafromsql" enctype="multipart/form-data">
-        <select id="state" name="state">
-            <option value="al">AL</option>
-            <option value="az">AZ</option>
-            <option value="ca">CA</option>
-            <option value="nm">NM</option>
-            <option value="mo">MO</option>
-            <option value="oh">OH</option>
-            <option value="in">IN</option>
-            <option value="il">IL</option>
-            <option value="tx">TX</option>
-            <option value="fl">FL</option>
-            <option value="ny">NY</option>
-            <option value="ut">UT</option>
-            <option value="co">CO</option>
-        
-        <input type="text" name="revenue" placeholder="Enter revenue"/> 
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <input type="submit" value="Generate"/>
-        <label style="color:rgb(6, 195, 0); font-style:italic;" > &nbsp;&nbsp;&nbsp;&nbsp; <%= successFileSave %> </label>
-    </form>
+    
 
     <br />
-    <h3>Step 3 - Upload LLDB</h3>
-    <form id="lldbupload" method="POST" action="/lldbupload" enctype="multipart/form-data">
-        <label> LLDB: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
-        <input type="file" name="file" />
-        <input type="submit" disabled/>
-    </form>
+    <div class="header">
+        <h3>Step 2 - Update Salesforce</h3>
+    </div>
+    <br />
+
+    <div class="content">
+        <form id="getlldb" method="GET" action="/getlldb" enctype="multipart/form-data">
+            <!-- <label class="step2">Select State</label>
+            <select id="state" name="state">
+                <option value="al">AL</option>
+                <option value="az">AZ</option>
+                <option value="ca">CA</option>
+                <option value="nm">NM</option>
+                <option value="mo">MO</option>
+                <option value="oh">OH</option>
+                <option value="in">IN</option>
+                <option value="il">IL</option>
+                <option value="tx">TX</option>
+                <option value="fl">FL</option>
+                <option value="ny">NY</option>
+                <option value="ut">UT</option>
+                <option value="co">CO</option>
+            </select>
+            <br />
+    
+            <label class="step2">Revenue per Student</label>
+            <input type="text" name="revenue" placeholder="Revenue per Student" />
+            <br />
+
+            <label class="step2">PSF Discount</label>
+            <input type="text" name="psfdiscount" placeholder="PSF Discount" />
+            <br />
+
+            <label class="step2">CSC Premium</label>
+            <input type="text" name="cscpremium" placeholder="CSC Premium" />
+            <br />
+
+            <label class="step2">Flat Rate Assumption</label>
+            <input type="text" name="flatrentassum" placeholder="Flat Rate Assumption" />
+            <br />
+
+            <label class="step2">Assigned Broker</label>
+            <input type="text" name="assignedbroker" placeholder="Assigned Broker" />
+            <br /><br /> -->
+
+            <input type="submit" value="Download Current LLDB For Review" />
+            <!-- <label style="color:rgb(6, 195, 0); font-style:italic;" > &nbsp;&nbsp;&nbsp;&nbsp; <%= successFileSave %> </label> -->
+        </form>
+    </div>
+
+
+    <!-- refresh -->
+    <div class="content">
+        <form id="refresh" method="GET" action="/" enctype="multipart/form-data">
+            <input type="submit" value="Refresh" />
+        </form>
+    </div>
+    
+
 
 </body>
 
