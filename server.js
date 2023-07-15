@@ -31,10 +31,13 @@ app.set('view engine', 'ejs')
 const blobService = azure.createBlobService('DefaultEndpointsProtocol=https;AccountName=cscdwfileupload;AccountKey=RlreQ0k6PR39bPVw5aEsjvk3LnIFBQXfmixD9sMBlYL+I2LcMlMveb/L6YT5a7gg6+FqMFsYMsyP+AStNiTApQ==;EndpointSuffix=core.windows.net')
 app.use(express.static('page'))
 
+// to read form values
+// app.use(express.bodyParser());
+app.use(express.json())
+app.use(express.urlencoded({extended: true}))
 
 
-// declare global variables
-var reonLastUpd
+
 
 
 // when the page first load or reload
@@ -52,6 +55,8 @@ app.get('/', async function (req, res) {
 
     let ccdLastUpdateOLD = []
     let reonomyLastUpdateOLD = []
+    let ccdenrLastUpdateOLD = []
+    let costarLastUpdateOLD = []
 
     // use async-await to get sql data out of the request
     // get ccd data
@@ -64,26 +69,36 @@ app.get('/', async function (req, res) {
             ccdLastUpdateOLD = ccdLastUpdate[0]
         })
 
-// get reonomy data
+
+    // get reonomy data
     await Db.getReonomyData()
         .then((reonomyData) => {
             reonomyDataArray = reonomyData[0]
         })
-        await Db.getReonomyLastUpdate()
+    await Db.getReonomyLastUpdate()
         .then((reonomyLastUpdate) => {
             reonomyLastUpdateOLD = reonomyLastUpdate[0]
         })
 
-        // get costar data
+
+    // get costar data
     await Db.getCostarData()
         .then((costarData) => {
             costarDataArray = costarData[0]
         })
+    await Db.getCostarLastUpdate()
+        .then((costarLastUpdate) => {
+            costarLastUpdateOLD = costarLastUpdate[0]
+        })
 
-        // get ccd enr data
+    // get ccd enr data
     await Db.getCddEnrollmentData()
         .then((ccdEnrData) => {
             ccdEnrDataArray = ccdEnrData[0]
+        })
+    await Db.getCcdEnrLastUpdate()
+        .then((ccdenrLastUpdate) => {
+            ccdenrLastUpdateOLD = ccdenrLastUpdate[0]
         })
 
     let ccdLastUpdate = ccdDataArray[0].LAST_UPDATE
@@ -91,36 +106,80 @@ app.get('/', async function (req, res) {
     let costarLastUpdate = costarDataArray[0].LAST_UPDATE
     let ccdEnrLastUpdate = ccdEnrDataArray[0].LAST_UPDATE
 
+
     // old and new dates ccd
-    let ccdNewDate = new Date(ccdDataArray[0].LAST_UPDATE)
+    let ccdNewDate = new Date(ccdLastUpdate)
     let ccdOldDate = new Date(ccdLastUpdateOLD[0].CCD_LAST_UPDATE)
-
     // old and new dates reonomy
-    let reonomyNewDate = new Date(ccdDataArray[0].LAST_UPDATE)
-    let reonomyOldDate = new Date(ccdLastUpdateOLD[0].CCD_LAST_UPDATE)
+    let reonomyNewDate = new Date(reonomyLastUpdate)
+    let reonomyOldDate = new Date(reonomyLastUpdateOLD[0].REONOMY_LAST_UPDATE)
+    // old and new dates ccd enrollment
+    let ccdenrNewDate = new Date(ccdEnrLastUpdate)
+    let ccdenrOldDate = new Date(ccdenrLastUpdateOLD[0].CCD_ENROLLMENT_LAST_UPDATE)
+    // old and new dates costar
+    let costarNewDate = new Date(costarLastUpdate)
+    let costarOldDate = new Date(costarLastUpdateOLD[0].COSTAR_LAST_UPDATE)
 
-// lldb refresh kick in when raw data has been updated
-    if(ccdNewDate.toString() !== ccdOldDate.toString() 
-        || reonomyNewDate.toString() !== reonomyOldDate.toString()) {
+
+
+    // lldb refresh kick in when raw data has been updated
+    if (ccdNewDate.toString() !== ccdOldDate.toString()
+        || reonomyNewDate.toString() !== reonomyOldDate.toString()
+        || ccdenrNewDate.toString() !== ccdenrOldDate.toString()
+        || costarNewDate.toString() !== costarOldDate.toString()) {
 
         console.log('fire update')
 
+        // check dates
+        console.log('ccd new = ', ccdNewDate.toString())
+        console.log('ccd old = ', ccdOldDate.toString())
+        console.log('ccd enr new = ', ccdenrNewDate.toString())
+        console.log('ccd enr old = ', ccdenrOldDate.toString())
+        console.log('reonomy new = ', reonomyNewDate.toString())
+        console.log('reonomy old = ', reonomyOldDate.toString())
+        console.log('costar new = ', costarNewDate.toString())
+        console.log('costar old = ', costarOldDate.toString())
+
+        // STEP 1 - here I sync the last update tables
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
         // CCD convert dates and create a record
-        if(ccdNewDate.toString() !== ccdOldDate.toString()) {
+        if (ccdNewDate.toString() !== ccdOldDate.toString()) {
+            console.log('ccd data is new')
             let time = ccdNewDate.toISOString().split('T')[1]
             let insertIntoSQLccd = ccdNewDate.toISOString().split('T')[0] + ' ' + time.substring(0, time.length - 1)
             Db.insertCCDLastUpdate(insertIntoSQLccd.toString())
         }
 
         // Reonomy convert dates and create a record
-        if(reonomyNewDate.toString() !== reonomyOldDate.toString()) {
+        if (reonomyNewDate.toString() !== reonomyOldDate.toString()) {
+            console.log('reonomy data is new')
             let time = reonomyNewDate.toISOString().split('T')[1]
             let insertIntoSQLreonomy = reonomyNewDate.toISOString().split('T')[0] + ' ' + time.substring(0, time.length - 1)
             Db.insertReonomyLastUpdate(insertIntoSQLreonomy.toString())
         }
-        
 
-        // assemble lldb and send it to sql
+        // CCD Enr convert dates and create a record
+        if (ccdenrNewDate.toString() !== ccdenrOldDate.toString()) {
+            console.log('ccd enr data is new')
+            let time = ccdenrNewDate.toISOString().split('T')[1]
+            let insertIntoSQLccdenr = ccdenrNewDate.toISOString().split('T')[0] + ' ' + time.substring(0, time.length - 1)
+            Db.insertCcdEnrLastUpdate(insertIntoSQLccdenr.toString())
+        }
+
+        // Costar convert dates and create a record
+        if (costarNewDate.toString() !== costarOldDate.toString()) {
+            console.log('costar data is new')
+            let time = costarNewDate.toISOString().split('T')[1]
+            let insertIntoSQLcostar = costarNewDate.toISOString().split('T')[0] + ' ' + time.substring(0, time.length - 1)
+            Db.insertCostarLastUpdate(insertIntoSQLcostar.toString())
+        }
+
+
+        // STEP 2 - Here I assemble the lldb table
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         var lldbArray = [];
 
         for (var ccd_i = 0; ccd_i < ccdDataArray.length; ccd_i++) {
@@ -163,7 +222,7 @@ app.get('/', async function (req, res) {
                 REONOMY_ID: ccd_obj.reonomy_id,
                 CCD_ID: ccd_obj.SCHID
             }
-    
+
             // bring ccd enr data
             // TODO: ccd_obj.SCHID is a number, but ccs_enr_obj.SCHID is a string, so either one has to be converted
             // adjust data types in sql to correct this
@@ -173,7 +232,7 @@ app.get('/', async function (req, res) {
                     lldbItem.STUDENT_COUNT = ccs_enr_obj.STUDENT_COUNT
                 }
             }
-    
+
             // bring costar data
             // Important!!! - convert data toLowerCase() before comparison
             for (var costar_i = 0; costar_i < costarDataArray.length; costar_i++) {
@@ -183,7 +242,7 @@ app.get('/', async function (req, res) {
                     lldbItem.MARKET_SALE_PRICE_PER_SF = costar_obj.Market_Sale_Price_per_SF
                 }
             }
-    
+
             // bring reonomy data
             for (var reonomy_i = 0; reonomy_i < reonomyDataArray.length; reonomy_i++) {
                 var reonomy_obj = reonomyDataArray[reonomy_i]
@@ -204,14 +263,69 @@ app.get('/', async function (req, res) {
                     lldbItem.PRIMARY_CONTACT_ZIP_CODE = reonomy_obj.contact_address_1_postal_code
                 }
             }
-    
+
             lldbArray.push(lldbItem)
-            
+
         }
 
         // Usefull: check the array before export 
         console.log('-----> my lldb table with ccd+enrollment+costar+reonomy data  ---->', lldbArray.length)
 
+        // STEP 3 - Here I save data into lldb sql table
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        if(lldbArray.length !== 0) {
+            let valueString = ''
+            for(var lldb_i = 0; lldb_i < lldbArray.length; lldb_i++) {
+                valueString += '(' 
+                + '\'' + lldbArray[lldb_i].Owner_ID + '\'' + ', '                       // nvarchar(50)
+                + '\'' + lldbArray[lldb_i].Tenant_Name + '\'' + ', '                    // nvarchar(50)
+                + lldbArray[lldb_i].STUDENT_COUNT + ', '                                // int
+                + lldbArray[lldb_i].ESTIMATED_REVENUE_PER_STUDENT + ', '                // decimal(18,2)
+                + '\'' + lldbArray[lldb_i].PROPERTY_ADDRESS_STREET + '\'' + ', '        // nvarchar(50)
+                + '\'' + lldbArray[lldb_i].PROPERTY_ADDRESS_CITY + '\'' + ', '          // nvarchar(50)
+                + '\'' + lldbArray[lldb_i].PROPERTY_ADDRESS_STATE + '\'' + ', '         // nvarchar(50)
+                + '\'' + lldbArray[lldb_i].PROPERTY_ADDRESS_ZIP_CODE + '\'' + ', '      // nvarchar(50)
+                + lldbArray[lldb_i].GROSS_BUILDING_AREA + ', '                          // decimal(18,2)
+                + '\'' + lldbArray[lldb_i].MSA + '\'' + ', '                            // nvarchar(50)
+                + lldbArray[lldb_i].MARKET_CAP_RATE + ', '                              // decimal(18,2)
+                + lldbArray[lldb_i].MARKET_SALE_PRICE_PER_SF + ', '                     // decimal(18,2)
+                + '\'' + lldbArray[lldb_i].VALUATION_METHOD + '\'' + ', '               // nvarchar(50)
+                + lldbArray[lldb_i].CSC_SALE_PRICE_PER_SF_DISCOUNT + ', '               // decimal(18,2)
+                + lldbArray[lldb_i].CSC_CAP_RATE_PREMIUM + ', '                         // decimal(18,2)
+                + lldbArray[lldb_i].RENT_TO_REVENUE_FLAT_ASSUMPTION + ', '              // decimal(18,2)
+                + '\'' + lldbArray[lldb_i].Account_ID + '\'' + ', '                     // nvarchar(50)
+                + '\'' + lldbArray[lldb_i].Industry + '\'' + ', '                       // nvarchar(50)
+                + lldbArray[lldb_i].LLDB_Date_Added + ', '                              // date
+                + lldbArray[lldb_i].LLDB_Last_Updated + ', '                            // date
+                + '\'' + lldbArray[lldb_i].Currently_Assigned_Broker + '\'' + ', '      // nvarchar(50) <-- change to Id??
+                + '\'' + lldbArray[lldb_i].PRIMARY_CONTACT_FIRST_NAME + '\'' + ', '     // nvarchar(50)
+                + '\'' + lldbArray[lldb_i].PRIMARY_CONTACT_LAST_NAME + '\'' + ', '      // nvarchar(50)
+                + '\'' + lldbArray[lldb_i].PRIMARY_CONTACT_TITLE?.replace('\'', '`') + '\'' + ', '          // nvarchar(50)
+                + '\'' + lldbArray[lldb_i].PRIMARY_CONTACT_PHONE + '\'' + ', '          // nvarchar(50)
+                + '\'' + lldbArray[lldb_i].PRIMARY_CONTACT_EMAIL + '\'' + ', '          // nvarchar(50)
+                + '\'' + lldbArray[lldb_i].PRIMARY_CONTACT_ADDRESS + '\'' + ', '        // nvarchar(50)
+                + '\'' + lldbArray[lldb_i].PRIMARY_CONTACT_CITY + '\'' + ', '           // nvarchar(50)
+                + '\'' + lldbArray[lldb_i].PRIMARY_CONTACT_STATE + '\'' + ', '          // nvarchar(50)
+                + '\'' + lldbArray[lldb_i].PRIMARY_CONTACT_ZIP_CODE + '\'' + ', '       // nvarchar(50)
+                + '\'' + lldbArray[lldb_i].CONTACT_RECORD_TYPE_ID + '\'' + ', '         // nvarchar(50)
+                + '\'' + lldbArray[lldb_i].TENANT_RECORD_TYPE_ID + '\'' + ', '          // nvarchar(50)
+                + '\'' + lldbArray[lldb_i].ACCOUNT_RECORD_TYPE_ID + '\'' + ', '         // nvarchar(50)
+                + '\'' + lldbArray[lldb_i].REONOMY_ID + '\'' + ', '                     // nvarchar(50)
+                + lldbArray[lldb_i].CCD_ID                                              // int
+                + '),'
+    
+            }
+    
+            valueString = valueString.substring(0, valueString.length - 1)
+    
+            // check my query string
+            // console.log('------> my sql query -----> ')
+            // console.log(valueString)
+
+            Db.insertLLDB(valueString)
+        }
+        
 
 
     }
@@ -232,11 +346,37 @@ app.get('/', async function (req, res) {
         successMessageCostar: '',
         errorMessage: '',
         successFileSave: '',
-        ccdLastUpdateToDisplay: ccdLastUpdate,
-        reonomyLastUpdateToDisplay: reonomyLastUpdate,
-        costarLastUpdateToDisplay: costarLastUpdate,
-        ccdEnrLastUpdateToDisplay: ccdEnrLastUpdate
+        ccdLastUpdateToDisplay: ccdNewDate.toString().substring(0, 24),
+        reonomyLastUpdateToDisplay: reonomyNewDate.toString().substring(0, 24),
+        costarLastUpdateToDisplay: costarNewDate.toString().substring(0, 24),
+        ccdEnrLastUpdateToDisplay: ccdenrNewDate.toString().substring(0, 24),
+        // array lengths
+        ccdLength: ccdDataArray.length,
+        ccdEnrLength: ccdEnrDataArray.length,
+        reonomyLength: reonomyDataArray.length,
+        costarLength: costarDataArray.length
     })
+})
+
+
+// get lldb
+app.get('/getlldb', async function (req, res) {
+    await Db.getLLDBData()
+    .then((data) => {
+        var myData = data[0]
+        converter.json2csv(myData)
+            .then((csv) => {
+                console.log('csv = ', csv)
+                //this statement tells the browser what type of data is supposed to download and force it to download
+                res.writeHead(200, {
+                    'Content-Type': 'text/csv',
+                    'Content-Disposition': 'attachment; filename=lldb_export.csv'
+                });
+                // whereas this part is in charge of telling what data should be parsed and be downloaded
+                res.end(csv, "binary");
+            })
+    })
+
 })
 
 
@@ -255,7 +395,15 @@ app.post('/postfile',
                 successMessageCCDEnrollment: '',
                 successMessageCostar: '',
                 successFileSave: '',
-                errorMessage: "ERROR: No files attached."
+                errorMessage: "ERROR: No files attached.",
+                ccdLength: '',
+                ccdEnrLength: '',
+                reonomyLength: '',
+                costarLength: '',
+                ccdLastUpdateToDisplay: 'ERROR: No files attached.',
+                ccdEnrLastUpdateToDisplay: 'ERROR: No files attached.',
+                reonomyLastUpdateToDisplay: 'ERROR: No files attached.',
+                costarLastUpdateToDisplay: 'ERROR: No files attached.',
             })
         } else {
             const rawBlobName = files.file.name
@@ -323,7 +471,12 @@ app.post('/postfile',
                                 ccdLastUpdateToDisplay: 'processing',
                                 ccdEnrLastUpdateToDisplay: 'processing',
                                 reonomyLastUpdateToDisplay: 'processing',
-                                costarLastUpdateToDisplay: 'processing'
+                                costarLastUpdateToDisplay: 'processing',
+                                // data length
+                                ccdLength: 'processing',
+                                ccdEnrLength: 'processing',
+                                reonomyLength: 'processing',
+                                costarLength: 'processing'
                             })
                         }
                         if (rawBlobName == 'reonomy.csv') {
@@ -338,7 +491,12 @@ app.post('/postfile',
                                 ccdLastUpdateToDisplay: 'processing',
                                 ccdEnrLastUpdateToDisplay: 'processing',
                                 reonomyLastUpdateToDisplay: 'processing',
-                                costarLastUpdateToDisplay: 'processing'
+                                costarLastUpdateToDisplay: 'processing',
+                                // data length
+                                ccdLength: 'processing',
+                                ccdEnrLength: 'processing',
+                                reonomyLength: 'processing',
+                                costarLength: 'processing'
                             })
                         }
                         if (rawBlobName == 'ccd-enrollment.csv') {
@@ -353,7 +511,12 @@ app.post('/postfile',
                                 ccdLastUpdateToDisplay: 'processing',
                                 ccdEnrLastUpdateToDisplay: 'processing',
                                 reonomyLastUpdateToDisplay: 'processing',
-                                costarLastUpdateToDisplay: 'processing'
+                                costarLastUpdateToDisplay: 'processing',
+                                // data length
+                                ccdLength: 'processing',
+                                ccdEnrLength: 'processing',
+                                reonomyLength: 'processing',
+                                costarLength: 'processing'
                             })
                         }
                         if (rawBlobName == 'costar.csv') {
@@ -368,7 +531,12 @@ app.post('/postfile',
                                 ccdLastUpdateToDisplay: 'processing',
                                 ccdEnrLastUpdateToDisplay: 'processing',
                                 reonomyLastUpdateToDisplay: 'processing',
-                                costarLastUpdateToDisplay: 'processing'
+                                costarLastUpdateToDisplay: 'processing',
+                                // data length
+                                ccdLength: 'processing',
+                                ccdEnrLength: 'processing',
+                                reonomyLength: 'processing',
+                                costarLength: 'processing'
                             })
                         }
 
@@ -383,36 +551,43 @@ app.post('/postfile',
     })
 
 
-// DELETE
-// shows how to save data from sql into csv
-// this one is for testing only and can be deleted
-app.get('/datafromsql', function (req, res) {
-    Db.getDataFromSQL()
-        .then((data) => {
-            var myData = data[0]
-            converter.json2csv(myData)
-                .then((csv) => {
-                    console.log('csv = ', csv)
-                    //this statement tells the browser what type of data is supposed to download and force it to download
-                    res.writeHead(200, {
-                        'Content-Type': 'text/csv',
-                        'Content-Disposition': 'attachment; filename=data_warehouse_export.csv'
-                    });
-                    // whereas this part is in charge of telling what data should be parsed and be downloaded
-                    res.end(csv, "binary");
-                })
-        })
+// manually updated
+app.post('/add', async (req, res) => {
+    const enteredData = req.body
+    console.log(enteredData)
+
+    let assBroker = enteredData.assignedbroker
+    // let revPerStudent = parseFloat(enteredData.revenue).toFixed(2)
+    // let psfdiscount = parseFloat(enteredData.psfdiscount).toFixed(2)
+    // let cscpremium = parseFloat(enteredData.cscpremium).toFixed(2)
+    // let flatrentassum = parseFloat(enteredData.flatrentassum).toFixed(2)
+    let state = enteredData.state
+
+    let revPerStudent = 0
+    let psfdiscount = 0
+    let cscpremium = 0
+    let flatrentassum = 0
+
+    console.log('--->', enteredData.revenue)
+
+    if(enteredData.revenue == '') {
+        revPerStudent = enteredData.revenue
+    }
+    if(enteredData.psfdiscount != null) {
+        psfdiscount = enteredData.psfdiscount
+    }
+    if(enteredData.cscpremium != null) {
+        cscpremium = enteredData.cscpremium
+    }
+    if(enteredData.flatrentassum != null) {
+        flatrentassum = enteredData.flatrentassum
+    }
+    
+
+    Db.insertLLDBman(state, assBroker, revPerStudent, psfdiscount, cscpremium, flatrentassum)
+
 })
-// DELETE
 
-
-// get lldb
-// used to query SQL and assemble lldb
-app.get('/getlldb', function (req, res) {
-
-    console.log('get lldb button pressed')
-
-})
 
 app.listen(PORT, HOST, () => {
     console.log(`Example app listening at http://localhost:${PORT}`)

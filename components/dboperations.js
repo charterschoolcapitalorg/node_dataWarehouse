@@ -3,17 +3,18 @@ const sql = require('mssql')
 
 // for testing
 // query all data from test table
-async function getDataFromSQL() {
-    try {
-        let pool = await sql.connect(config)
-        let products = await pool.request().query("SELECT * from testData")
-        return products.recordsets
-    }
-    catch (error) {
-        console.log(error)
-    }
-}
+// async function getDataFromSQL() {
+//     try {
+//         let pool = await sql.connect(config)
+//         let products = await pool.request().query("SELECT * from testData")
+//         return products.recordsets
+//     }
+//     catch (error) {
+//         console.log(error)
+//     }
+// }
 
+// insert data into last update tables
 // insert data into sql
 async function insertCCDLastUpdate(ccd_last_update) {
     // wrap into single quotes
@@ -32,11 +33,84 @@ async function insertCCDLastUpdate(ccd_last_update) {
 async function insertReonomyLastUpdate(reonomy_last_update) {
     // wrap into single quotes
     let reonomylastUpdate = '\'' + reonomy_last_update + '\''
-    let queryString = 'INSERT INTO ccd_sch_last_update (CCD_LAST_UPDATE) VALUES (' + reonomylastUpdate + ')'
+    let queryString = 'INSERT INTO reonomy_last_update (REONOMY_LAST_UPDATE) VALUES (' + reonomylastUpdate + ')'
     try {
         let pool = await sql.connect(config)
         await pool.request().query(queryString)
         console.log('reonomy record saved')
+    }
+    catch (error) {
+        console.log(error)
+    }
+}
+
+async function insertCcdEnrLastUpdate(ccd_enr_last_update) {
+    // wrap into single quotes
+    let ccdenrlastUpdate = '\'' + ccd_enr_last_update + '\''
+    let queryString = 'INSERT INTO ccd_enrollment_last_update (CCD_ENROLLMENT_LAST_UPDATE) VALUES (' + ccdenrlastUpdate + ')'
+    try {
+        let pool = await sql.connect(config)
+        await pool.request().query(queryString)
+        console.log('ccd enr record saved')
+    }
+    catch (error) {
+        console.log(error)
+    }
+}
+
+async function insertCostarLastUpdate(costar_last_update) {
+    // wrap into single quotes
+    let costarlastUpdate = '\'' + costar_last_update + '\''
+    let queryString = 'INSERT INTO costar_last_update (COSTAR_LAST_UPDATE) VALUES (' + costarlastUpdate + ')'
+    try {
+        let pool = await sql.connect(config)
+        await pool.request().query(queryString)
+        console.log('costar record saved')
+    }
+    catch (error) {
+        console.log(error)
+    }
+}
+
+
+
+
+// insert data into lldb table
+// STEP 3 - Here I save data into lldb sql table
+// +++++++++++++++++++++++++++++++++++++++++++++++
+async function insertLLDB(valueString) {
+    let queryString = 'INSERT INTO charter_lldb (Owner_ID, Tenant_Name, STUDENT_COUNT, ESTIMATED_REVENUE_PER_STUDENT, PROPERTY_ADDRESS_STREET, PROPERTY_ADDRESS_CITY, PROPERTY_ADDRESS_STATE, PROPERTY_ADDRESS_ZIP_CODE, GROSS_BUILDING_AREA, MSA, MARKET_CAP_RATE, MARKET_SALE_PRICE_PER_SF, VALUATION_METHOD, CSC_SALE_PRICE_PER_SF_DISCOUNT, CSC_CAP_RATE_PREMIUM, RENT_TO_REVENUE_FLAT_ASSUMPTION, Account_ID, Industry, LLDB_Date_Added, LLDB_Last_Updated, Currently_Assigned_Broker, PRIMARY_CONTACT_FIRST_NAME, PRIMARY_CONTACT_LAST_NAME, PRIMARY_CONTACT_TITLE, PRIMARY_CONTACT_PHONE, PRIMARY_CONTACT_EMAIL, PRIMARY_CONTACT_ADDRESS, PRIMARY_CONTACT_CITY, PRIMARY_CONTACT_STATE, PRIMARY_CONTACT_ZIP_CODE, CONTACT_RECORD_TYPE_ID, TENANT_RECORD_TYPE_ID, ACCOUNT_RECORD_TYPE_ID, REONOMY_ID, CCD_ID) VALUES ' + valueString
+    console.log('full query string:')
+    console.log(queryString)
+    try {
+        let pool = await sql.connect(config)
+        await pool.request().query(queryString)
+        console.log('lldb records saved')
+    }
+    catch (error) {
+        console.log(error)
+    }
+}
+
+
+// lldb save manual data
+// +++++++++++++++++++++++++++++++++++++++++++++++
+async function insertLLDBman(state, assBroker, revPerStudent, psfdiscount, cscpremium, flatrentassum) {
+    let queryString = 'UPDATE charter_lldb SET Currently_Assigned_Broker = ' 
+    + '\'' + assBroker + '\'' + ','
+    + ' ESTIMATED_REVENUE_PER_STUDENT = ' 
+    + revPerStudent + ','
+    + ' CSC_CAP_RATE_PREMIUM = ' 
+    + cscpremium + ','
+    + ' RENT_TO_REVENUE_FLAT_ASSUMPTION = ' 
+    + flatrentassum 
+    + ' WHERE PROPERTY_ADDRESS_STATE = '
+    + '\'' + state + '\''
+    console.log(queryString)
+    try {
+        let pool = await sql.connect(config)
+        await pool.request().query(queryString)
+        console.log('lldb manual records saved')
     }
     catch (error) {
         console.log(error)
@@ -150,16 +224,67 @@ async function getReonomyLastUpdate() {
     }
 }
 
+// query ccd enrollment last update
+async function getCcdEnrLastUpdate() {
+    try {
+        let pool = await sql.connect(config)
+        let ccsEnrLastUpdateAzure = await pool.request().query("SELECT * from ccd_enrollment_last_update ORDER BY CCD_ENROLLMENT_LAST_UPDATE DESC")
+        return ccsEnrLastUpdateAzure.recordsets
+    }
+    catch (error) {
+        console.log(error)
+    }
+}
+
+// query costar last update
+async function getCostarLastUpdate() {
+    try {
+        let pool = await sql.connect(config)
+        let costarLastUpdateAzure = await pool.request().query("SELECT * from costar_last_update ORDER BY COSTAR_LAST_UPDATE DESC")
+        return costarLastUpdateAzure.recordsets
+    }
+    catch (error) {
+        console.log(error)
+    }
+}
+
+
+
+
+
+// get lldb data
+async function getLLDBData() {
+    try {
+        let pool = await sql.connect(config)
+        let getLLDBFromAzure = await pool.request().query("SELECT * from charter_lldb")
+        return getLLDBFromAzure.recordsets
+    }
+    catch (error) {
+        console.log(error)
+    }
+}
+
+
 module.exports = {
-    getDataFromSQL: getDataFromSQL,
+    // getDataFromSQL: getDataFromSQL,
+    // get data from tables
     getCcdData: getCcdData,
     getReonomyData: getReonomyData,
     getCostarData: getCostarData,
     getCddEnrollmentData: getCddEnrollmentData,
-
+    // get last update
     getCddLastUpdate: getCddLastUpdate,
     getReonomyLastUpdate: getReonomyLastUpdate,
-
+    getCcdEnrLastUpdate: getCcdEnrLastUpdate,
+    getCostarLastUpdate: getCostarLastUpdate,
+    // insert
     insertCCDLastUpdate: insertCCDLastUpdate,
-    insertReonomyLastUpdate: insertReonomyLastUpdate
+    insertReonomyLastUpdate: insertReonomyLastUpdate,
+    insertCcdEnrLastUpdate: insertCcdEnrLastUpdate,
+    insertCostarLastUpdate: insertCostarLastUpdate,
+
+    insertLLDB: insertLLDB,
+    insertLLDBman: insertLLDBman,
+
+    getLLDBData: getLLDBData
 }
