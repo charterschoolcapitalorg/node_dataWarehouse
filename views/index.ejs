@@ -74,11 +74,18 @@
             border-radius: 5px;
         }
 
+        input:disabled,
+        input[disabled] {
+            border: 1px solid #999999;
+            background-color: #cccccc;
+            color: #666666;
+        }
+
         input[type=submit]:hover {
             background-color: #3b863f;
         }
 
-        input[type=text], 
+        input[type=text],
         input[type=number],
         input[type=currency],
         select {
@@ -110,11 +117,24 @@
             background-color: #ccc;
         }
 
+        .accordion:after {
+            content: '\002B';
+            color: #777;
+            font-weight: bold;
+            float: right;
+            margin-left: 5px;
+        }
+
+        .active:after {
+            content: "\2212";
+        }
+
         .panel {
             padding: 0 18px;
-            /* display: none; */
             background-color: white;
+            max-height: 0;
             overflow: hidden;
+            transition: max-height 0.2s ease-out;
         }
 
 
@@ -284,55 +304,93 @@
                 </div>
 
 
-                <form action="/add" method="POST" >
+                <form action="/add" method="POST">
                     <div class="columnmain">
 
                         <label class="step2" style="color: red;">Select State *
                             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
-                        <select id="state" name="state" style="border-color: red">
+                        <select id="state" name="state" style="border-color: red" onchange="enableStartBtn()">
                             <option value="selectstate">Select Sate ...</option>
                             <option value="al">AL</option>
+                            <option value="ak">AK</option>
                             <option value="az">AZ</option>
+                            <option value="ar">AR</option>
+                            <option value="dc">DC</option>
                             <option value="ca">CA</option>
-                            <option value="nm">NM</option>
-                            <option value="mo">MO</option>
-                            <option value="oh">OH</option>
-                            <option value="in">IN</option>
-                            <option value="il">IL</option>
-                            <option value="tx">TX</option>
-                            <option value="fl">FL</option>
-                            <option value="ny">NY</option>
-                            <option value="ut">UT</option>
                             <option value="co">CO</option>
+                            <option value="ct">CT</option>
+                            <option value="de">DE</option>
+                            <option value="fl">FL</option>
+                            <option value="ga">GA</option>
+                            <option value="hi">HI</option>
+                            <option value="id">ID</option>
+                            <option value="il">IL</option>
+                            <option value="in">IN</option>
+                            <option value="ia">IA</option>
+                            <option value="ks">KS</option>
+                            <option value="ky">KY</option>
+                            <option value="la">LA</option>
+                            <option value="me">ME</option>
+                            <option value="md">MD</option>
+                            <option value="ma">MA</option>
+                            <option value="mi">MI</option>
+                            <option value="mn">MN</option>
+                            <option value="ms">MS</option>
+                            <option value="mo">MO</option>
+                            <option value="mt">MT</option>
+                            <option value="ne">NE</option>
+                            <option value="nv">NV</option>
+                            <option value="nh">NH</option>
+                            <option value="nj">NJ</option>
+                            <option value="nm">NM</option>
+                            <option value="ny">NY</option>
+                            <option value="nc">NC</option>
+                            <option value="nd">ND</option>
+                            <option value="oh">OH</option>
+                            <option value="ok">OK</option>
+                            <option value="or">OR</option>
+                            <option value="pa">PA</option>
+                            <option value="ri">RI</option>
+                            <option value="sc">SC</option>
+                            <option value="sd">SD</option>
+                            <option value="tn">TN</option>
+                            <option value="tx">TX</option>
+                            <option value="ut">UT</option>
+                            <option value="vt">VT</option>
+                            <option value="va">VA</option>
+                            <option value="wa">WA</option>
+                            <option value="wv">WV</option>
+                            <option value="wi">WI</option>
+                            <option value="wy">wy</option>
                         </select>
                         <br /><br />
 
                         <label class="step2">Revenue per Student</label>
-                        <input type="currency" name="revenue" placeholder="Enter Revenue per Student ..." value="0.00"/>
+                        <input type="number" step="0.01" id="revenue" name="revenue" placeholder="Enter Revenue per Student ..."
+                            value="" onkeyup="validate()" />
                         <br /><br />
 
                         <label class="step2">PSF Discount
                             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
-                        <input type="currency" name="psfdiscount" placeholder="Enter PSF Discount ..." value="0.00"/>
+                        <input type="number" step="0.01" name="psfdiscount" placeholder="Enter PSF Discount ..." value="" />
                         <br /><br />
 
                         <label class="step2">CSC Premium
                             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
-                        <input type="currency" name="cscpremium" placeholder="Enter CSC Premium ..." value="0.00"/>
+                        <input type="number" step="0.01" name="cscpremium" placeholder="Enter CSC Premium ..." value="" />
                         <br /><br />
 
                         <label class="step2">Flat Rate Assumption</label>
-                        <input type="currency" name="flatrentassum" placeholder="Enter Flat Rate Assumption ..." value="0"/>
+                        <input type="number" step="0.01" name="flatrentassum" placeholder="Enter Flat Rate Assumption ..."
+                            value="" />
                         <br /><br />
 
-                        <label class="step2">Assigned Broker &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
-                        <input type="text" name="assignedbroker" placeholder="Enter Assigned Broker ..." />
-                        <br /><br />
                     </div>
 
                     <div class="columnbutton">
-                        <input type="submit" value="Upload into Salesforce" />
+                        <input id="startBtn" type="submit" value="Upload into Salesforce" />
                     </div>
+
                 </form>
 
 
@@ -355,10 +413,10 @@
                     <input type="submit" value="Download LLDB" />
                 </form>
             </div>
-            <br /><br />
+
 
             <!-- Section 2 - Expand to Review LLDB Record Counts -->
-            <button class="accordion">Expand to Review LLDB Record Counts</button>
+            <button class="accordion">LLDB Record Counts</button>
             <div class="panel">
                 <p>Total Records CCD: <%= ccdLength %>
                 </p>
@@ -383,8 +441,7 @@
 
 
     <!-- scripts -->
-    <!-- this one is for accordion buttons (NOT working in SF) -->
-    <!-- TODO: research why accordion buttons are not working in SF -->
+    <!-- this one is for accordion buttons (NOT working in SF iframe) -->
     <script>
         var acc = document.getElementsByClassName("accordion");
         var i;
@@ -393,10 +450,10 @@
             acc[i].addEventListener("click", function () {
                 this.classList.toggle("active");
                 var panel = this.nextElementSibling;
-                if (panel.style.display === "block") {
-                    panel.style.display = "none";
+                if (panel.style.maxHeight) {
+                    panel.style.maxHeight = null;
                 } else {
-                    panel.style.display = "block";
+                    panel.style.maxHeight = panel.scrollHeight + "px";
                 }
             });
         }
@@ -404,7 +461,7 @@
 
 
     <!-- this one is for the loader -->
-    <!-- this is not working in SF -->
+    <!-- this is not working in SF iframe-->
     <script>
         var myVar;
         function myFunction() {
@@ -415,6 +472,11 @@
             document.getElementById("myDiv").style.display = "block";
         }
     </script>
+
+
+    <!-- check manual entry values -->
+
+
 
 </body>
 

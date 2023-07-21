@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "alert": "^5.1.4",
     "azure-storage": "^2.10.7",
     "ejs": "^3.1.9",
     "express": "^4.18.2",
@@ -17,6 +18,7 @@
     "into-stream": "^6.0.0",
     "json-2-csv": "^4.0.0",
     "mssql": "^9.1.1",
+    "popups": "^1.1.3",
     "request": "^2.88.2"
   }
 }

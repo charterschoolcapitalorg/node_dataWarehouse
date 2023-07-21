@@ -95,17 +95,8 @@ async function insertLLDB(valueString) {
 
 // lldb save manual data
 // +++++++++++++++++++++++++++++++++++++++++++++++
-async function insertLLDBman(state, assBroker, revPerStudent, psfdiscount, cscpremium, flatrentassum) {
-    let queryString = 'UPDATE charter_lldb SET Currently_Assigned_Broker = ' 
-    + '\'' + assBroker + '\'' + ','
-    + ' ESTIMATED_REVENUE_PER_STUDENT = ' 
-    + revPerStudent + ','
-    + ' CSC_CAP_RATE_PREMIUM = ' 
-    + cscpremium + ','
-    + ' RENT_TO_REVENUE_FLAT_ASSUMPTION = ' 
-    + flatrentassum 
-    + ' WHERE PROPERTY_ADDRESS_STATE = '
-    + '\'' + state + '\''
+async function insertLLDBman(state, setString) {
+    let queryString = 'UPDATE charter_lldb ' + setString + ' WHERE PROPERTY_ADDRESS_STATE = ' + '\'' + state + '\''
     console.log(queryString)
     try {
         let pool = await sql.connect(config)

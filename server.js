@@ -31,10 +31,14 @@ app.set('view engine', 'ejs')
 const blobService = azure.createBlobService('DefaultEndpointsProtocol=https;AccountName=cscdwfileupload;AccountKey=RlreQ0k6PR39bPVw5aEsjvk3LnIFBQXfmixD9sMBlYL+I2LcMlMveb/L6YT5a7gg6+FqMFsYMsyP+AStNiTApQ==;EndpointSuffix=core.windows.net')
 app.use(express.static('page'))
 
+// alerts 
+// var popup = require('popups')
+let alert = require('alert')
+
 // to read form values
 // app.use(express.bodyParser());
 app.use(express.json())
-app.use(express.urlencoded({extended: true}))
+app.use(express.urlencoded({ extended: true }))
 
 
 
@@ -43,6 +47,8 @@ app.use(express.urlencoded({extended: true}))
 // when the page first load or reload
 // TODO: add LOADING spin
 app.get('/', async function (req, res) {
+
+    console.log('@@@ main screen reload')
 
 
     // support last update functionality
@@ -199,7 +205,7 @@ app.get('/', async function (req, res) {
                 MARKET_CAP_RATE: null,
                 MARKET_SALE_PRICE_PER_SF: null,
                 VALUATION_METHOD: null,
-                CSC_SALE_PRICE_PER_SF_DISCOUNT: null,
+                CSC_SALE_PRICE_PER_SF_DISCOUNT: null, // psfdiscount
                 CSC_CAP_RATE_PREMIUM: null,
                 RENT_TO_REVENUE_FLAT_ASSUMPTION: null,
                 Account_ID: null,
@@ -274,58 +280,58 @@ app.get('/', async function (req, res) {
         // STEP 3 - Here I save data into lldb sql table
         // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        if(lldbArray.length !== 0) {
+        if (lldbArray.length !== 0) {
             let valueString = ''
-            for(var lldb_i = 0; lldb_i < lldbArray.length; lldb_i++) {
-                valueString += '(' 
-                + '\'' + lldbArray[lldb_i].Owner_ID + '\'' + ', '                       // nvarchar(50)
-                + '\'' + lldbArray[lldb_i].Tenant_Name + '\'' + ', '                    // nvarchar(50)
-                + lldbArray[lldb_i].STUDENT_COUNT + ', '                                // int
-                + lldbArray[lldb_i].ESTIMATED_REVENUE_PER_STUDENT + ', '                // decimal(18,2)
-                + '\'' + lldbArray[lldb_i].PROPERTY_ADDRESS_STREET + '\'' + ', '        // nvarchar(50)
-                + '\'' + lldbArray[lldb_i].PROPERTY_ADDRESS_CITY + '\'' + ', '          // nvarchar(50)
-                + '\'' + lldbArray[lldb_i].PROPERTY_ADDRESS_STATE + '\'' + ', '         // nvarchar(50)
-                + '\'' + lldbArray[lldb_i].PROPERTY_ADDRESS_ZIP_CODE + '\'' + ', '      // nvarchar(50)
-                + lldbArray[lldb_i].GROSS_BUILDING_AREA + ', '                          // decimal(18,2)
-                + '\'' + lldbArray[lldb_i].MSA + '\'' + ', '                            // nvarchar(50)
-                + lldbArray[lldb_i].MARKET_CAP_RATE + ', '                              // decimal(18,2)
-                + lldbArray[lldb_i].MARKET_SALE_PRICE_PER_SF + ', '                     // decimal(18,2)
-                + '\'' + lldbArray[lldb_i].VALUATION_METHOD + '\'' + ', '               // nvarchar(50)
-                + lldbArray[lldb_i].CSC_SALE_PRICE_PER_SF_DISCOUNT + ', '               // decimal(18,2)
-                + lldbArray[lldb_i].CSC_CAP_RATE_PREMIUM + ', '                         // decimal(18,2)
-                + lldbArray[lldb_i].RENT_TO_REVENUE_FLAT_ASSUMPTION + ', '              // decimal(18,2)
-                + '\'' + lldbArray[lldb_i].Account_ID + '\'' + ', '                     // nvarchar(50)
-                + '\'' + lldbArray[lldb_i].Industry + '\'' + ', '                       // nvarchar(50)
-                + lldbArray[lldb_i].LLDB_Date_Added + ', '                              // date
-                + lldbArray[lldb_i].LLDB_Last_Updated + ', '                            // date
-                + '\'' + lldbArray[lldb_i].Currently_Assigned_Broker + '\'' + ', '      // nvarchar(50) <-- change to Id??
-                + '\'' + lldbArray[lldb_i].PRIMARY_CONTACT_FIRST_NAME + '\'' + ', '     // nvarchar(50)
-                + '\'' + lldbArray[lldb_i].PRIMARY_CONTACT_LAST_NAME + '\'' + ', '      // nvarchar(50)
-                + '\'' + lldbArray[lldb_i].PRIMARY_CONTACT_TITLE?.replace('\'', '`') + '\'' + ', '          // nvarchar(50)
-                + '\'' + lldbArray[lldb_i].PRIMARY_CONTACT_PHONE + '\'' + ', '          // nvarchar(50)
-                + '\'' + lldbArray[lldb_i].PRIMARY_CONTACT_EMAIL + '\'' + ', '          // nvarchar(50)
-                + '\'' + lldbArray[lldb_i].PRIMARY_CONTACT_ADDRESS + '\'' + ', '        // nvarchar(50)
-                + '\'' + lldbArray[lldb_i].PRIMARY_CONTACT_CITY + '\'' + ', '           // nvarchar(50)
-                + '\'' + lldbArray[lldb_i].PRIMARY_CONTACT_STATE + '\'' + ', '          // nvarchar(50)
-                + '\'' + lldbArray[lldb_i].PRIMARY_CONTACT_ZIP_CODE + '\'' + ', '       // nvarchar(50)
-                + '\'' + lldbArray[lldb_i].CONTACT_RECORD_TYPE_ID + '\'' + ', '         // nvarchar(50)
-                + '\'' + lldbArray[lldb_i].TENANT_RECORD_TYPE_ID + '\'' + ', '          // nvarchar(50)
-                + '\'' + lldbArray[lldb_i].ACCOUNT_RECORD_TYPE_ID + '\'' + ', '         // nvarchar(50)
-                + '\'' + lldbArray[lldb_i].REONOMY_ID + '\'' + ', '                     // nvarchar(50)
-                + lldbArray[lldb_i].CCD_ID                                              // int
-                + '),'
-    
+            for (var lldb_i = 0; lldb_i < lldbArray.length; lldb_i++) {
+                valueString += '('
+                    + '\'' + lldbArray[lldb_i].Owner_ID + '\'' + ', '                       // nvarchar(50)
+                    + '\'' + lldbArray[lldb_i].Tenant_Name + '\'' + ', '                    // nvarchar(50)
+                    + lldbArray[lldb_i].STUDENT_COUNT + ', '                                // int
+                    + lldbArray[lldb_i].ESTIMATED_REVENUE_PER_STUDENT + ', '                // decimal(18,2)
+                    + '\'' + lldbArray[lldb_i].PROPERTY_ADDRESS_STREET + '\'' + ', '        // nvarchar(50)
+                    + '\'' + lldbArray[lldb_i].PROPERTY_ADDRESS_CITY + '\'' + ', '          // nvarchar(50)
+                    + '\'' + lldbArray[lldb_i].PROPERTY_ADDRESS_STATE + '\'' + ', '         // nvarchar(50)
+                    + '\'' + lldbArray[lldb_i].PROPERTY_ADDRESS_ZIP_CODE + '\'' + ', '      // nvarchar(50)
+                    + lldbArray[lldb_i].GROSS_BUILDING_AREA + ', '                          // decimal(18,2)
+                    + '\'' + lldbArray[lldb_i].MSA + '\'' + ', '                            // nvarchar(50)
+                    + lldbArray[lldb_i].MARKET_CAP_RATE + ', '                              // decimal(18,2)
+                    + lldbArray[lldb_i].MARKET_SALE_PRICE_PER_SF + ', '                     // decimal(18,2)
+                    + '\'' + lldbArray[lldb_i].VALUATION_METHOD + '\'' + ', '               // nvarchar(50)
+                    + lldbArray[lldb_i].CSC_SALE_PRICE_PER_SF_DISCOUNT + ', '               // decimal(18,2)
+                    + lldbArray[lldb_i].CSC_CAP_RATE_PREMIUM + ', '                         // decimal(18,2)
+                    + lldbArray[lldb_i].RENT_TO_REVENUE_FLAT_ASSUMPTION + ', '              // decimal(18,2)
+                    + '\'' + lldbArray[lldb_i].Account_ID + '\'' + ', '                     // nvarchar(50)
+                    + '\'' + lldbArray[lldb_i].Industry + '\'' + ', '                       // nvarchar(50)
+                    + lldbArray[lldb_i].LLDB_Date_Added + ', '                              // date
+                    + lldbArray[lldb_i].LLDB_Last_Updated + ', '                            // date
+                    + '\'' + lldbArray[lldb_i].Currently_Assigned_Broker + '\'' + ', '      // nvarchar(50) <-- change to Id??
+                    + '\'' + lldbArray[lldb_i].PRIMARY_CONTACT_FIRST_NAME + '\'' + ', '     // nvarchar(50)
+                    + '\'' + lldbArray[lldb_i].PRIMARY_CONTACT_LAST_NAME + '\'' + ', '      // nvarchar(50)
+                    + '\'' + lldbArray[lldb_i].PRIMARY_CONTACT_TITLE?.replace('\'', '`') + '\'' + ', '          // nvarchar(50)
+                    + '\'' + lldbArray[lldb_i].PRIMARY_CONTACT_PHONE + '\'' + ', '          // nvarchar(50)
+                    + '\'' + lldbArray[lldb_i].PRIMARY_CONTACT_EMAIL + '\'' + ', '          // nvarchar(50)
+                    + '\'' + lldbArray[lldb_i].PRIMARY_CONTACT_ADDRESS + '\'' + ', '        // nvarchar(50)
+                    + '\'' + lldbArray[lldb_i].PRIMARY_CONTACT_CITY + '\'' + ', '           // nvarchar(50)
+                    + '\'' + lldbArray[lldb_i].PRIMARY_CONTACT_STATE + '\'' + ', '          // nvarchar(50)
+                    + '\'' + lldbArray[lldb_i].PRIMARY_CONTACT_ZIP_CODE + '\'' + ', '       // nvarchar(50)
+                    + '\'' + lldbArray[lldb_i].CONTACT_RECORD_TYPE_ID + '\'' + ', '         // nvarchar(50)
+                    + '\'' + lldbArray[lldb_i].TENANT_RECORD_TYPE_ID + '\'' + ', '          // nvarchar(50)
+                    + '\'' + lldbArray[lldb_i].ACCOUNT_RECORD_TYPE_ID + '\'' + ', '         // nvarchar(50)
+                    + '\'' + lldbArray[lldb_i].REONOMY_ID + '\'' + ', '                     // nvarchar(50)
+                    + lldbArray[lldb_i].CCD_ID                                              // int
+                    + '),'
+
             }
-    
+
             valueString = valueString.substring(0, valueString.length - 1)
-    
+
             // check my query string
             // console.log('------> my sql query -----> ')
             // console.log(valueString)
 
             Db.insertLLDB(valueString)
         }
-        
+
 
 
     }
@@ -362,20 +368,20 @@ app.get('/', async function (req, res) {
 // get lldb
 app.get('/getlldb', async function (req, res) {
     await Db.getLLDBData()
-    .then((data) => {
-        var myData = data[0]
-        converter.json2csv(myData)
-            .then((csv) => {
-                console.log('csv = ', csv)
-                //this statement tells the browser what type of data is supposed to download and force it to download
-                res.writeHead(200, {
-                    'Content-Type': 'text/csv',
-                    'Content-Disposition': 'attachment; filename=lldb_export.csv'
-                });
-                // whereas this part is in charge of telling what data should be parsed and be downloaded
-                res.end(csv, "binary");
-            })
-    })
+        .then((data) => {
+            var myData = data[0]
+            converter.json2csv(myData)
+                .then((csv) => {
+                    console.log('csv = ', csv)
+                    //this statement tells the browser what type of data is supposed to download and force it to download
+                    res.writeHead(200, {
+                        'Content-Type': 'text/csv',
+                        'Content-Disposition': 'attachment; filename=lldb_export.csv'
+                    });
+                    // whereas this part is in charge of telling what data should be parsed and be downloaded
+                    res.end(csv, "binary");
+                })
+        })
 
 })
 
@@ -553,38 +559,52 @@ app.post('/postfile',
 
 // manually updated
 app.post('/add', async (req, res) => {
+
+    // IMPORTANT
+    // you need to use(express.urlencoded({extended: true})) and use(expres.json) before you can access req.body
     const enteredData = req.body
     console.log(enteredData)
 
-    let assBroker = enteredData.assignedbroker
-    // let revPerStudent = parseFloat(enteredData.revenue).toFixed(2)
-    // let psfdiscount = parseFloat(enteredData.psfdiscount).toFixed(2)
-    // let cscpremium = parseFloat(enteredData.cscpremium).toFixed(2)
-    // let flatrentassum = parseFloat(enteredData.flatrentassum).toFixed(2)
-    let state = enteredData.state
+    if (enteredData.state !== 'selectstate') {
+        if (enteredData.revenue !== '' || enteredData.cscpremium !== '' || enteredData.flatrentassum !== '' || enteredData.psfdiscount !== '') {
+            let setString = ' SET '
 
-    let revPerStudent = 0
-    let psfdiscount = 0
-    let cscpremium = 0
-    let flatrentassum = 0
+            if (enteredData.revenue !== '') {
+                setString += ' ESTIMATED_REVENUE_PER_STUDENT = ' + enteredData.revenue
+            }
+            if (enteredData.cscpremium !== '') {
+                setString += ', CSC_CAP_RATE_PREMIUM = ' + enteredData.cscpremium
+            }
+            if (enteredData.flatrentassum !== '') {
+                setString += ', RENT_TO_REVENUE_FLAT_ASSUMPTION = ' + enteredData.flatrentassum
+            }
+            if (enteredData.psfdiscount !== '') {
+                setString += ', CSC_SALE_PRICE_PER_SF_DISCOUNT = ' + enteredData.psfdiscount
+            }
 
-    console.log('--->', enteredData.revenue)
+            console.log('setString ----->', setString)
+            Db.insertLLDBman(enteredData.state, setString)
 
-    if(enteredData.revenue == '') {
-        revPerStudent = enteredData.revenue
-    }
-    if(enteredData.psfdiscount != null) {
-        psfdiscount = enteredData.psfdiscount
-    }
-    if(enteredData.cscpremium != null) {
-        cscpremium = enteredData.cscpremium
-    }
-    if(enteredData.flatrentassum != null) {
-        flatrentassum = enteredData.flatrentassum
-    }
-    
+            // return to user
+            res.send({
+                message: 'lldb has been updated'
+            })
 
-    Db.insertLLDBman(state, assBroker, revPerStudent, psfdiscount, cscpremium, flatrentassum)
+        } else {
+            // return to user
+            res.send({
+                message: 'Please enter values'
+            })
+        }
+
+    } else {
+        // return to user
+        res.send({
+            message: 'Please choose state'
+        })
+    }
+
+
 
 })
 
