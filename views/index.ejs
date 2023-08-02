@@ -217,14 +217,7 @@
                             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
                         <input type="file" name="file" />
                         <input type="submit" />
-                        <label style="color:tomato; font-style:italic;"> &nbsp;&nbsp;&nbsp;&nbsp; <%= successMessageCCD
-                                %>
-                        </label>
                     </form>
-                    <!-- display last update -->
-                    <p style="margin-top: -5px; font-size: 12px; color:blue">Last update: <%= ccdLastUpdateToDisplay %>
-                    </p>
-
 
                     <!-- CCD Enrollment Data -->
                     <br />
@@ -232,15 +225,7 @@
                         <label> CCD Enrollment: &nbsp;</label>
                         <input type="file" name="file" />
                         <input type="submit" />
-                        <label style="color:tomato; font-style:italic;"> &nbsp;&nbsp;&nbsp;&nbsp; <%=
-                                successMessageCCDEnrollment %>
-                        </label>
                     </form>
-                    <!-- display last update -->
-                    <p style="margin-top: -5px; font-size: 12px; color:blue">Last update: <%= ccdEnrLastUpdateToDisplay
-                            %>
-                    </p>
-
 
                     <!-- Reonomy Data -->
                     <br />
@@ -249,14 +234,7 @@
                             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
                         <input type="file" name="file" />
                         <input type="submit" />
-                        <label style="color:tomato; font-style:italic;"> &nbsp;&nbsp;&nbsp;&nbsp; <%=
-                                successMessageReonomy %> </label>
                     </form>
-                    <!-- display last update -->
-                    <p style="margin-top: -5px; font-size: 12px; color:blue">Last update: <%= reonomyLastUpdateToDisplay
-                            %>
-                    </p>
-
 
                     <!-- Sate Funding Data -->
                     <br />
@@ -265,9 +243,6 @@
                         <input type="file" name="file" />
                         <input type="submit" disabled />
                     </form>
-                    <!-- display last update -->
-                    <p style="margin-top: -5px; font-size: 12px; color:blue">Last update: undefind, no data provided
-                    </p>
 
                     <!-- CoStar Data -->
                     <br />
@@ -276,21 +251,15 @@
                             CoStar:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
                         <input type="file" name="file" />
                         <input type="submit" />
-                        <label style="color:tomato; font-style:italic;"> &nbsp;&nbsp;&nbsp;&nbsp; <%=
-                                successMessageCostar %> </label>
                     </form>
-                    <!-- display last update -->
-                    <p style="margin-top: -5px; font-size: 12px; color:blue">Last update: <%= costarLastUpdateToDisplay
-                            %>
-                    </p>
 
                 </div>
 
                 <div class="columnbutton">
                     <!-- Refresh upload status -->
-                    <form id="refresh" method="GET" action="/" enctype="multipart/form-data">
+                    <!-- <form id="refresh" method="GET" action="/" enctype="multipart/form-data">
                         <input type="submit" value="Refresh Upload Status" />
-                    </form>
+                    </form> -->
                 </div>
             </div>
 
@@ -418,15 +387,11 @@
             <!-- Section 2 - Expand to Review LLDB Record Counts -->
             <button class="accordion">LLDB Record Counts</button>
             <div class="panel">
-                <p>Total Records CCD: <%= ccdLength %>
-                </p>
-                <p style="margin-top: -10px;">Total Records CCD Enrollment: <%= ccdEnrLength %>
-                </p>
-                <p style="margin-top: -10px;">Total Records Reonomy: <%= reonomyLength %>
-                </p>
-                <p style="margin-top: -10px;">Total Records CoStar: <%= costarLength %>
-                </p>
-                <p style="margin-top: -10px;">Total Records LLDB: </p>
+                <p>Some data here </p>
+                <p>Some data here </p>
+                <p>Some data here </p>
+                <p>Some data here </p>
+                <p>Some data here </p>
             </div>
         </div>
 
@@ -472,11 +437,6 @@
             document.getElementById("myDiv").style.display = "block";
         }
     </script>
-
-
-    <!-- check manual entry values -->
-
-
 
 </body>
 

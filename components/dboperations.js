@@ -1,6 +1,8 @@
 var config = require('./dbconfig')
 const sql = require('mssql')
 
+
+
 // for testing
 // query all data from test table
 // async function getDataFromSQL() {
@@ -13,6 +15,27 @@ const sql = require('mssql')
 //         console.log(error)
 //     }
 // }
+
+// insert data into sql
+async function insertTestData(data) {
+    // wrap into single quotes
+    // let valueString = '\'' + data + '\''
+    let queryString = 'INSERT INTO charter_lldb_salesforce (Owner_ID, Tenant_Name, PROPERTY_ADDRESS_STREET) VALUES ' + data
+    console.log(queryString)
+    try {
+        let pool = await sql.connect(config)
+        await pool.request().query(queryString)
+    }
+    catch (error) {
+        // empty
+    }
+}
+
+
+
+
+
+
 
 // insert data into last update tables
 // insert data into sql
@@ -82,10 +105,13 @@ async function insertLLDB(valueString) {
     let queryString = 'INSERT INTO charter_lldb (Owner_ID, Tenant_Name, STUDENT_COUNT, ESTIMATED_REVENUE_PER_STUDENT, PROPERTY_ADDRESS_STREET, PROPERTY_ADDRESS_CITY, PROPERTY_ADDRESS_STATE, PROPERTY_ADDRESS_ZIP_CODE, GROSS_BUILDING_AREA, MSA, MARKET_CAP_RATE, MARKET_SALE_PRICE_PER_SF, VALUATION_METHOD, CSC_SALE_PRICE_PER_SF_DISCOUNT, CSC_CAP_RATE_PREMIUM, RENT_TO_REVENUE_FLAT_ASSUMPTION, Account_ID, Industry, LLDB_Date_Added, LLDB_Last_Updated, Currently_Assigned_Broker, PRIMARY_CONTACT_FIRST_NAME, PRIMARY_CONTACT_LAST_NAME, PRIMARY_CONTACT_TITLE, PRIMARY_CONTACT_PHONE, PRIMARY_CONTACT_EMAIL, PRIMARY_CONTACT_ADDRESS, PRIMARY_CONTACT_CITY, PRIMARY_CONTACT_STATE, PRIMARY_CONTACT_ZIP_CODE, CONTACT_RECORD_TYPE_ID, TENANT_RECORD_TYPE_ID, ACCOUNT_RECORD_TYPE_ID, REONOMY_ID, CCD_ID) VALUES ' + valueString
     console.log('full query string:')
     console.log(queryString)
+    // delete data from lldb table first
+    // insert data into lldb table
     try {
         let pool = await sql.connect(config)
+        await pool.request().query('DELETE FROM charter_lldb')
         await pool.request().query(queryString)
-        console.log('lldb records saved')
+        console.log('old lldb records deleted, new records saved')
     }
     catch (error) {
         console.log(error)
@@ -277,5 +303,7 @@ module.exports = {
     insertLLDB: insertLLDB,
     insertLLDBman: insertLLDBman,
 
-    getLLDBData: getLLDBData
+    getLLDBData: getLLDBData,
+    
+    insertTestData: insertTestData
 }

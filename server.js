@@ -33,10 +33,16 @@ app.use(express.static('page'))
 
 // alerts 
 // var popup = require('popups')
-let alert = require('alert')
+// let alert = require('alert')
 
 // to read form values
-// app.use(express.bodyParser());
+var bodyParser = require('body-parser')
+// parse application/json
+app.use(bodyParser.json());
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: true }))
+
+
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
@@ -48,8 +54,7 @@ app.use(express.urlencoded({ extended: true }))
 // TODO: add LOADING spin
 app.get('/', async function (req, res) {
 
-    console.log('@@@ main screen reload')
-
+    console.log('@@@ main screen loal/re-load')
 
     // support last update functionality
     // query sql to find out when the data was updated
@@ -336,36 +341,12 @@ app.get('/', async function (req, res) {
 
     }
 
-
-
-
-
-
-
-
-
     // return this
-    res.render('index', {
-        successMessageCCD: '',
-        successMessageReonomy: '',
-        successMessageCCDEnrollment: '',
-        successMessageCostar: '',
-        errorMessage: '',
-        successFileSave: '',
-        ccdLastUpdateToDisplay: ccdNewDate.toString().substring(0, 24),
-        reonomyLastUpdateToDisplay: reonomyNewDate.toString().substring(0, 24),
-        costarLastUpdateToDisplay: costarNewDate.toString().substring(0, 24),
-        ccdEnrLastUpdateToDisplay: ccdenrNewDate.toString().substring(0, 24),
-        // array lengths
-        ccdLength: ccdDataArray.length,
-        ccdEnrLength: ccdEnrDataArray.length,
-        reonomyLength: reonomyDataArray.length,
-        costarLength: costarDataArray.length
-    })
+    res.render('index', {})
 })
 
 
-// get lldb
+// get lldb that was made out of raw data
 app.get('/getlldb', async function (req, res) {
     await Db.getLLDBData()
         .then((data) => {
@@ -395,21 +376,8 @@ app.post('/postfile',
         const files = req.files
 
         if (!req.files) {
-            res.render("index", {
-                successMessageCCD: '',
-                successMessageReonomy: '',
-                successMessageCCDEnrollment: '',
-                successMessageCostar: '',
-                successFileSave: '',
-                errorMessage: "ERROR: No files attached.",
-                ccdLength: '',
-                ccdEnrLength: '',
-                reonomyLength: '',
-                costarLength: '',
-                ccdLastUpdateToDisplay: 'ERROR: No files attached.',
-                ccdEnrLastUpdateToDisplay: 'ERROR: No files attached.',
-                reonomyLastUpdateToDisplay: 'ERROR: No files attached.',
-                costarLastUpdateToDisplay: 'ERROR: No files attached.',
+            res.send({
+                message: 'No files attached'
             })
         } else {
             const rawBlobName = files.file.name
@@ -417,46 +385,35 @@ app.post('/postfile',
             let containerName
             let stream
             let streamLength
-            let successMessage
-            let errorMessage
 
             if (rawBlobName == 'ccd_sch.csv') {
-                console.log('===================== I AM CCD DATA')
                 containerName = 'ccd'
                 blobName = 'ccd/' + rawBlobName
                 streamLength = files.file.size
                 stream = getStream(files.file.data)
-                successMessage = '... ccd processing'
             }
             if (rawBlobName == 'reonomy.csv') {
-                console.log('===================== I AM REONOMY DATA')
                 containerName = 'reonomy'
                 blobName = 'reonomy/' + rawBlobName
                 streamLength = files.file.size
                 stream = getStream(files.file.data)
-                successMessage = '... reonomy processing'
             }
             if (rawBlobName == 'ccd-enrollment.csv') {
-                console.log('===================== I AM CCD ENROLLMENT DATA')
                 containerName = 'ccd-enrollment'
                 blobName = 'ccd-enrollment/' + rawBlobName
                 streamLength = files.file.size
                 stream = getStream(files.file.data)
-                successMessage = '... ccd-enrollment processing'
             }
             if (rawBlobName == 'costar.csv') {
-                console.log('===================== I AM COSTAR DATA')
                 containerName = 'costar'
                 blobName = 'costar/' + rawBlobName
                 streamLength = files.file.size
                 stream = getStream(files.file.data)
-                successMessage = '... costar processing'
             }
 
             console.log(containerName)
             console.log(rawBlobName)
             console.log(blobName)
-            console.log(successMessage)
 
             blobService.createBlockBlobFromStream(
                 containerName,
@@ -466,88 +423,31 @@ app.post('/postfile',
                 (err) => {
                     if (!err) {
                         if (rawBlobName == 'ccd_sch.csv') {
-                            res.render("index", {
-                                successMessageCCD: successMessage,
-                                successMessageReonomy: '',
-                                successMessageCCDEnrollment: '',
-                                successMessageCostar: '',
-                                successFileSave: '',
-                                errorMessage: '',
-                                // last updates
-                                ccdLastUpdateToDisplay: 'processing',
-                                ccdEnrLastUpdateToDisplay: 'processing',
-                                reonomyLastUpdateToDisplay: 'processing',
-                                costarLastUpdateToDisplay: 'processing',
-                                // data length
-                                ccdLength: 'processing',
-                                ccdEnrLength: 'processing',
-                                reonomyLength: 'processing',
-                                costarLength: 'processing'
+                            res.send({
+                                message: 'CCD data processing'
                             })
                         }
                         if (rawBlobName == 'reonomy.csv') {
-                            res.render("index", {
-                                successMessageCCD: '',
-                                successMessageReonomy: successMessage,
-                                successMessageCCDEnrollment: '',
-                                successMessageCostar: '',
-                                successFileSave: '',
-                                errorMessage: '',
-                                // last updates
-                                ccdLastUpdateToDisplay: 'processing',
-                                ccdEnrLastUpdateToDisplay: 'processing',
-                                reonomyLastUpdateToDisplay: 'processing',
-                                costarLastUpdateToDisplay: 'processing',
-                                // data length
-                                ccdLength: 'processing',
-                                ccdEnrLength: 'processing',
-                                reonomyLength: 'processing',
-                                costarLength: 'processing'
+                            res.send({
+                                message: 'Reonomy data processing'
                             })
                         }
                         if (rawBlobName == 'ccd-enrollment.csv') {
-                            res.render("index", {
-                                successMessageCCD: '',
-                                successMessageReonomy: '',
-                                successMessageCCDEnrollment: successMessage,
-                                successMessageCostar: '',
-                                successFileSave: '',
-                                errorMessage: '',
-                                // last updates
-                                ccdLastUpdateToDisplay: 'processing',
-                                ccdEnrLastUpdateToDisplay: 'processing',
-                                reonomyLastUpdateToDisplay: 'processing',
-                                costarLastUpdateToDisplay: 'processing',
-                                // data length
-                                ccdLength: 'processing',
-                                ccdEnrLength: 'processing',
-                                reonomyLength: 'processing',
-                                costarLength: 'processing'
+                            res.send({
+                                message: 'CCD-Enrollment data processing'
                             })
                         }
                         if (rawBlobName == 'costar.csv') {
-                            res.render("index", {
-                                successMessageCCD: '',
-                                successMessageReonomy: '',
-                                successMessageCCDEnrollment: '',
-                                successMessageCostar: successMessage,
-                                successFileSave: '',
-                                errorMessage: '',
-                                // last updates
-                                ccdLastUpdateToDisplay: 'processing',
-                                ccdEnrLastUpdateToDisplay: 'processing',
-                                reonomyLastUpdateToDisplay: 'processing',
-                                costarLastUpdateToDisplay: 'processing',
-                                // data length
-                                ccdLength: 'processing',
-                                ccdEnrLength: 'processing',
-                                reonomyLength: 'processing',
-                                costarLength: 'processing'
+                            res.send({
+                                message: 'Costar data processing'
                             })
                         }
 
                     } else {
-                        res.render("index", { errorMessage: "ERROR: Something went wrong." })
+                        // res.render("index", { errorMessage: "ERROR: Something went wrong." })
+                        res.send({
+                            message: 'ERROR: Something went wrong'
+                        })
                     }
                 }
             )
@@ -591,6 +491,7 @@ app.post('/add', async (req, res) => {
             })
 
         } else {
+            console.log('No values have been entered')
             // return to user
             res.send({
                 message: 'Please enter values'
@@ -598,14 +499,59 @@ app.post('/add', async (req, res) => {
         }
 
     } else {
+        console.log('State has not been selected')
         // return to user
         res.send({
             message: 'Please choose state'
         })
     }
+})
 
 
+// push salesforce data into sql
+// app.post('/postsfdata', async function (req, res) {
+//     const rawBody = req.body
+//     console.log(rawBody)
+//     // console.log(JSON.stringify(rawBody))
+//     // const dataFromSalesforce = req.body.testing
+//     // const testData = 'testData string'
+//     // console.log('my req.body = ', req.body)
+//     // console.log('my req.body.testing = ', req.body.testing) // req.body.testing is undefined !!!
+//     // Db.insertTestData(req.body.testing)
 
+//     // return to user
+//     res.send({
+//         // message: req.body 
+//         // + '; ' + req.body.testing + '; ' + JSON.parse(req.body) + '; ' + JSON.parse(req.body).testing + '; ' + + JSON.stringify(req.body) + '; ' + JSON.stringify(req.body).testing
+//         message: 'here, ' + JSON.stringify(rawBody)
+//     })
+// })
+
+// push salesforce data into sql
+app.post('/postsfdata', async function (req, res) {
+
+    const sfData = req.body
+    console.log(sfData.length)
+    console.log(sfData)
+
+    let valueString = ''
+    for(var i = 0; i < sfData.length; i++) {
+        let item = sfData[i]
+        valueString += '('
+        + '\'' + item.Owner_ID + '\'' + ', '
+        + '\'' + item.Tenant_Name + '\'' + ', ' 
+        + '\'' + item.PROPERTY_ADDRESS_STREET + '\'' + '),'
+    }
+
+    valueString = valueString.substring(0, valueString.length - 1)
+    console.log(valueString)
+    // uncomment below!!!!!
+    Db.insertTestData(valueString)
+
+    // return to user
+    res.send({
+        message: req.body
+    })
 })
 
 
