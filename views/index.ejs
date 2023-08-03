@@ -376,10 +376,14 @@
         <div class="columncontrolpanel">
 
             <!-- Section 1 - Analyze LLDB Market Info -->
+            <!-- TODO: how many buttons do we need? -->
             <button class="accordion">Analyze LLDB Market Info</button>
             <div class="panel">
                 <form id="getlldb" method="GET" action="/getlldb" enctype="multipart/form-data">
-                    <input type="submit" value="Download LLDB" />
+                    <input type="submit" value="Download raw LLDB" />
+                </form>
+                <form id="getsalesforcelldb" method="GET" action="/getsalesforcelldb" enctype="multipart/form-data">
+                    <input type="submit" value=" Download SF LLDB" />
                 </form>
             </div>
 

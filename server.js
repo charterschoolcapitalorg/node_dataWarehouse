@@ -366,6 +366,26 @@ app.get('/getlldb', async function (req, res) {
 
 })
 
+// get lldb that was made out of salesforce data
+app.get('/getsalesforcelldb', async function (req, res) {
+    await Db.getSalesforceLLDBData()
+        .then((data) => {
+            var myData = data[0]
+            converter.json2csv(myData)
+                .then((csv) => {
+                    console.log('csv = ', csv)
+                    //this statement tells the browser what type of data is supposed to download and force it to download
+                    res.writeHead(200, {
+                        'Content-Type': 'text/csv',
+                        'Content-Disposition': 'attachment; filename=salesforce_lldb_export.csv'
+                    });
+                    // whereas this part is in charge of telling what data should be parsed and be downloaded
+                    res.end(csv, "binary");
+                })
+        })
+
+})
+
 
 // File upload
 // TODO: make one POST per form, rater than all in one
@@ -540,7 +560,40 @@ app.post('/postsfdata', async function (req, res) {
         valueString += '('
         + '\'' + item.Owner_ID + '\'' + ', '
         + '\'' + item.Tenant_Name + '\'' + ', ' 
-        + '\'' + item.PROPERTY_ADDRESS_STREET + '\'' + '),'
+        + item.STUDENT_COUNT + ', ' 
+        + item.ESTIMATED_REVENUE_PER_STUDENT + ', ' 
+        + '\'' + item.PROPERTY_ADDRESS_STREET + '\'' + ', ' 
+        + '\'' + item.PROPERTY_ADDRESS_CITY + '\'' + ', '
+        + '\'' + item.PROPERTY_ADDRESS_STATE + '\'' + ', '
+        + '\'' + item.PROPERTY_ADDRESS_ZIP_CODE + '\'' + ', '
+        + item.GROSS_BUILDING_AREA + ', '
+        + '\'' + item.MSA + '\'' + ', '
+        + item.MARKET_CAP_RATE + ', '
+        + item.MARKET_SALE_PRICE_PER_SF + ', ' 
+        + '\'' + item.VALUATION_METHOD + '\'' + ', '
+        + item.CSC_SALE_PRICE_PER_SF_DISCOUNT + ', '
+        + item.CSC_CAP_RATE_PREMIUM + ', '
+        + item.RENT_TO_REVENUE_FLAT_ASSUMPTION + ', '
+        + '\'' + item.Account_ID + '\'' + ', '
+        + '\'' + item.Industry + '\'' + ', ' 
+        + item.LLDB_Date_Added + ', '
+        + item.LLDB_Last_Updated + ', '
+        + '\'' + item.Currently_Assigned_Broker + '\'' + ', '
+        + '\'' + item.PRIMARY_CONTACT_FIRST_NAME + '\'' + ', '
+        + '\'' + item.PRIMARY_CONTACT_LAST_NAME + '\'' + ', ' 
+        + '\'' + item.PRIMARY_CONTACT_TITLE?.replace('\'', '`') + '\'' + ', '
+        + '\'' + item.PRIMARY_CONTACT_PHONE + '\'' + ', '
+        + '\'' + item.PRIMARY_CONTACT_EMAIL + '\'' + ', '
+        + '\'' + item.PRIMARY_CONTACT_ADDRESS + '\'' + ', '
+        + '\'' + item.PRIMARY_CONTACT_CITY + '\'' + ', '
+        + '\'' + item.PRIMARY_CONTACT_STATE + '\'' + ', '
+        + '\'' + item.PRIMARY_CONTACT_ZIP_CODE + '\'' + ', '
+        + '\'' + item.CONTACT_RECORD_TYPE_ID + '\'' + ', '
+        + '\'' + item.TENANT_RECORD_TYPE_ID + '\'' + ', '
+        + '\'' + item.ACCOUNT_RECORD_TYPE_ID + '\'' + ', '
+        + '\'' + item.REONOMY_ID + '\'' + ', ' 
+        + item.CCD_ID
+        + '),'
     }
 
     valueString = valueString.substring(0, valueString.length - 1)
