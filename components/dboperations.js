@@ -21,7 +21,7 @@ async function insertTestData(data) {
     // wrap into single quotes
     // let valueString = '\'' + data + '\''
     // let queryString = 'INSERT INTO charter_lldb_salesforce (Owner_ID, Tenant_Name, PROPERTY_ADDRESS_STREET) VALUES ' + data
-    let queryString = 'INSERT INTO charter_lldb_salesforce (Owner_ID, Tenant_Name, STUDENT_COUNT, ESTIMATED_REVENUE_PER_STUDENT, PROPERTY_ADDRESS_STREET, PROPERTY_ADDRESS_CITY, PROPERTY_ADDRESS_STATE, PROPERTY_ADDRESS_ZIP_CODE, GROSS_BUILDING_AREA, MSA, MARKET_CAP_RATE, MARKET_SALE_PRICE_PER_SF, VALUATION_METHOD, CSC_SALE_PRICE_PER_SF_DISCOUNT, CSC_CAP_RATE_PREMIUM, RENT_TO_REVENUE_FLAT_ASSUMPTION, Account_ID, Industry, LLDB_Date_Added, LLDB_Last_Updated, Currently_Assigned_Broker, PRIMARY_CONTACT_FIRST_NAME, PRIMARY_CONTACT_LAST_NAME, PRIMARY_CONTACT_TITLE, PRIMARY_CONTACT_PHONE, PRIMARY_CONTACT_EMAIL, PRIMARY_CONTACT_ADDRESS, PRIMARY_CONTACT_CITY, PRIMARY_CONTACT_STATE, PRIMARY_CONTACT_ZIP_CODE, CONTACT_RECORD_TYPE_ID, TENANT_RECORD_TYPE_ID, ACCOUNT_RECORD_TYPE_ID, REONOMY_ID, CCD_ID) VALUES ' + data
+    let queryString = 'INSERT INTO charter_lldb_salesforce (Owner_ID, Tenant_Name, STUDENT_COUNT, ESTIMATED_REVENUE_PER_STUDENT, PROPERTY_ADDRESS_STREET, PROPERTY_ADDRESS_CITY, PROPERTY_ADDRESS_STATE, PROPERTY_ADDRESS_ZIP_CODE, GROSS_BUILDING_AREA, MSA, MARKET_CAP_RATE, MARKET_SALE_PRICE_PER_SF, VALUATION_METHOD, CSC_SALE_PRICE_PER_SF_DISCOUNT, CSC_CAP_RATE_PREMIUM, RENT_TO_REVENUE_FLAT_ASSUMPTION, Account_ID, Industry, LLDB_Date_Added, LLDB_Last_Updated, Currently_Assigned_Broker, PRIMARY_CONTACT_FIRST_NAME, PRIMARY_CONTACT_LAST_NAME, PRIMARY_CONTACT_TITLE, PRIMARY_CONTACT_PHONE, PRIMARY_CONTACT_EMAIL, PRIMARY_CONTACT_ADDRESS, PRIMARY_CONTACT_CITY, PRIMARY_CONTACT_STATE, PRIMARY_CONTACT_ZIP_CODE, CONTACT_RECORD_TYPE_ID, TENANT_RECORD_TYPE_ID, ACCOUNT_RECORD_TYPE_ID, REONOMY_ID, CCD_ID, Account_Name) VALUES ' + data
     console.log('MY QUERY ------>')
     console.log(queryString)
     try {
@@ -105,7 +105,7 @@ async function insertCostarLastUpdate(costar_last_update) {
 // STEP 3 - Here I save data into lldb sql table
 // +++++++++++++++++++++++++++++++++++++++++++++++
 async function insertLLDB(valueString) {
-    let queryString = 'INSERT INTO charter_lldb (Owner_ID, Tenant_Name, STUDENT_COUNT, ESTIMATED_REVENUE_PER_STUDENT, PROPERTY_ADDRESS_STREET, PROPERTY_ADDRESS_CITY, PROPERTY_ADDRESS_STATE, PROPERTY_ADDRESS_ZIP_CODE, GROSS_BUILDING_AREA, MSA, MARKET_CAP_RATE, MARKET_SALE_PRICE_PER_SF, VALUATION_METHOD, CSC_SALE_PRICE_PER_SF_DISCOUNT, CSC_CAP_RATE_PREMIUM, RENT_TO_REVENUE_FLAT_ASSUMPTION, Account_ID, Industry, LLDB_Date_Added, LLDB_Last_Updated, Currently_Assigned_Broker, PRIMARY_CONTACT_FIRST_NAME, PRIMARY_CONTACT_LAST_NAME, PRIMARY_CONTACT_TITLE, PRIMARY_CONTACT_PHONE, PRIMARY_CONTACT_EMAIL, PRIMARY_CONTACT_ADDRESS, PRIMARY_CONTACT_CITY, PRIMARY_CONTACT_STATE, PRIMARY_CONTACT_ZIP_CODE, CONTACT_RECORD_TYPE_ID, TENANT_RECORD_TYPE_ID, ACCOUNT_RECORD_TYPE_ID, REONOMY_ID, CCD_ID) VALUES ' + valueString
+    let queryString = 'INSERT INTO charter_lldb (Owner_ID, Tenant_Name, STUDENT_COUNT, ESTIMATED_REVENUE_PER_STUDENT, PROPERTY_ADDRESS_STREET, PROPERTY_ADDRESS_CITY, PROPERTY_ADDRESS_STATE, PROPERTY_ADDRESS_ZIP_CODE, GROSS_BUILDING_AREA, MSA, MARKET_CAP_RATE, MARKET_SALE_PRICE_PER_SF, VALUATION_METHOD, CSC_SALE_PRICE_PER_SF_DISCOUNT, CSC_CAP_RATE_PREMIUM, RENT_TO_REVENUE_FLAT_ASSUMPTION, Account_ID, Industry, LLDB_Date_Added, LLDB_Last_Updated, Currently_Assigned_Broker, PRIMARY_CONTACT_FIRST_NAME, PRIMARY_CONTACT_LAST_NAME, PRIMARY_CONTACT_TITLE, PRIMARY_CONTACT_PHONE, PRIMARY_CONTACT_EMAIL, PRIMARY_CONTACT_ADDRESS, PRIMARY_CONTACT_CITY, PRIMARY_CONTACT_STATE, PRIMARY_CONTACT_ZIP_CODE, CONTACT_RECORD_TYPE_ID, TENANT_RECORD_TYPE_ID, ACCOUNT_RECORD_TYPE_ID, REONOMY_ID, CCD_ID, Account_Name) VALUES ' + valueString
     console.log('full query string:')
     console.log(queryString)
     // delete data from lldb table first
@@ -297,6 +297,48 @@ async function getSalesforceLLDBData() {
 }
 
 
+
+
+// save json lldb data
+// +++++++++++++++++++++++++++++++++++++++++++++++
+async function inserJsontLLDB() {
+    let valueString = 'Success'
+    let queryString = 'INSERT INTO lldb_json (json_data) VALUES (' + '\'' + valueString + '\'' + ')'
+    console.log('full query string:')
+    console.log(queryString)
+    // delete data from lldb table first
+    // insert data into lldb table
+    try {
+        let pool = await sql.connect(config)
+        await pool.request().query('DELETE FROM lldb_json')
+        await pool.request().query(queryString)
+        console.log('SUCCESS')
+    }
+    catch (error) {
+        console.log(error)
+    }
+}
+
+// save final lldb data
+// +++++++++++++++++++++++++++++++++++++++++++++++
+async function insertFinalLLDB(valueString) {
+    let queryString = 'INSERT INTO charter_lldb_final (Owner_ID, Tenant_Name, STUDENT_COUNT, ESTIMATED_REVENUE_PER_STUDENT, PROPERTY_ADDRESS_STREET, PROPERTY_ADDRESS_CITY, PROPERTY_ADDRESS_STATE, PROPERTY_ADDRESS_ZIP_CODE, GROSS_BUILDING_AREA, MSA, MARKET_CAP_RATE, MARKET_SALE_PRICE_PER_SF, VALUATION_METHOD, CSC_SALE_PRICE_PER_SF_DISCOUNT, CSC_CAP_RATE_PREMIUM, RENT_TO_REVENUE_FLAT_ASSUMPTION, Account_ID, Industry, LLDB_Date_Added, LLDB_Last_Updated, Currently_Assigned_Broker, PRIMARY_CONTACT_FIRST_NAME, PRIMARY_CONTACT_LAST_NAME, PRIMARY_CONTACT_TITLE, PRIMARY_CONTACT_PHONE, PRIMARY_CONTACT_EMAIL, PRIMARY_CONTACT_ADDRESS, PRIMARY_CONTACT_CITY, PRIMARY_CONTACT_STATE, PRIMARY_CONTACT_ZIP_CODE, CONTACT_RECORD_TYPE_ID, TENANT_RECORD_TYPE_ID, ACCOUNT_RECORD_TYPE_ID, REONOMY_ID, CCD_ID, Account_Name) VALUES ' + valueString
+    console.log('full query string:')
+    console.log(queryString)
+    // delete data from lldb table first
+    // insert data into lldb table
+    try {
+        let pool = await sql.connect(config)
+        await pool.request().query('DELETE FROM charter_lldb_final')
+        await pool.request().query(queryString)
+        console.log('SUCCESS')
+    }
+    catch (error) {
+        console.log(error)
+    }
+}
+
+
 module.exports = {
     // getDataFromSQL: getDataFromSQL,
     // get data from tables
@@ -321,5 +363,8 @@ module.exports = {
     getLLDBData: getLLDBData,
     getSalesforceLLDBData: getSalesforceLLDBData,
     
-    insertTestData: insertTestData
+    insertTestData: insertTestData,
+
+    inserJsontLLDB: inserJsontLLDB,
+    insertFinalLLDB: insertFinalLLDB
 }
