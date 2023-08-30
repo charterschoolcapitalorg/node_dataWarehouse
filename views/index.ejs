@@ -379,6 +379,9 @@
             <!-- TODO: how many buttons do we need? -->
             <button class="accordion">Analyze LLDB Market Info</button>
             <div class="panel">
+                <form id="getrawlldb" method="GET" action="/getrawlldb" enctype="multipart/form-data">
+                    <input type="submit" value="Build raw LLDB" style="width: 100%;"/>
+                </form>
                 <form id="getlldb" method="GET" action="/getlldb" enctype="multipart/form-data">
                     <input type="submit" value="Download raw LLDB" style="width: 100%;"/>
                 </form>

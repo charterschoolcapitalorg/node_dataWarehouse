@@ -52,9 +52,13 @@ app.use(express.urlencoded({ extended: true }))
 
 // when the page first load or reload
 // TODO: add LOADING spin
-app.get('/', async function (req, res) {
-
+app.get('/', function(req, res){
     console.log('@@@ main screen loal/re-load')
+    res.render('index', {})
+})
+
+
+app.get('/getrawlldb', async function (req, res) {
 
     // support last update functionality
     // query sql to find out when the data was updated
@@ -141,16 +145,6 @@ app.get('/', async function (req, res) {
 
         console.log('fire update')
 
-        // check dates
-        console.log('ccd new = ', ccdNewDate.toString())
-        console.log('ccd old = ', ccdOldDate.toString())
-        console.log('ccd enr new = ', ccdenrNewDate.toString())
-        console.log('ccd enr old = ', ccdenrOldDate.toString())
-        console.log('reonomy new = ', reonomyNewDate.toString())
-        console.log('reonomy old = ', reonomyOldDate.toString())
-        console.log('costar new = ', costarNewDate.toString())
-        console.log('costar old = ', costarOldDate.toString())
-
         // STEP 1 - here I sync the last update tables
         // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -193,6 +187,7 @@ app.get('/', async function (req, res) {
         // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         var lldbArray = [];
 
+        // bring ccd data
         for (var ccd_i = 0; ccd_i < ccdDataArray.length; ccd_i++) {
             var ccd_obj = ccdDataArray[ccd_i]
             // console.log('------->', ccd_obj.STATENAME)
@@ -201,10 +196,10 @@ app.get('/', async function (req, res) {
                 Tenant_Name: ccd_obj.SCH_NAME,
                 STUDENT_COUNT: null,
                 ESTIMATED_REVENUE_PER_STUDENT: null,
-                PROPERTY_ADDRESS_STREET: null,
-                PROPERTY_ADDRESS_CITY: null,
-                PROPERTY_ADDRESS_STATE: null,
-                PROPERTY_ADDRESS_ZIP_CODE: null,
+                PROPERTY_ADDRESS_STREET: ccd_obj.LSTREET1, // School site is CCD data if reonomy data is missing
+                PROPERTY_ADDRESS_CITY: ccd_obj.LCITY, // School site is CCD data if reonomy data is missing
+                PROPERTY_ADDRESS_STATE: ccd_obj.LSTATE, // School site is CCD data if reonomy data is missing
+                PROPERTY_ADDRESS_ZIP_CODE: ccd_obj.LZIP, // School site is CCD data if reonomy data is missing
                 GROSS_BUILDING_AREA: null,
                 MSA: null,
                 MARKET_CAP_RATE: null,
@@ -259,25 +254,25 @@ app.get('/', async function (req, res) {
             for (var reonomy_i = 0; reonomy_i < reonomyDataArray.length; reonomy_i++) {
                 var reonomy_obj = reonomyDataArray[reonomy_i]
                 if (ccd_obj.reonomy_id == reonomy_obj.reonomy_id) {
-                    lldbItem.PROPERTY_ADDRESS_STREET = reonomy_obj.address_line_1
-                    lldbItem.PROPERTY_ADDRESS_CITY = reonomy_obj.address_city
-                    lldbItem.PROPERTY_ADDRESS_STATE = reonomy_obj.address_state
-                    lldbItem.PROPERTY_ADDRESS_ZIP_CODE = reonomy_obj.address_postal_code
+                    // replace school site address data if reonomy data is not null
+                    if(reonomy_obj.address_line_1 !== null && reonomy_obj.address_city !== null && reonomy_obj.address_state !== null && reonomy_obj.address_postal_code !== null) {
+                        lldbItem.PROPERTY_ADDRESS_STREET = reonomy_obj.address_line_1
+                        lldbItem.PROPERTY_ADDRESS_CITY = reonomy_obj.address_city
+                        lldbItem.PROPERTY_ADDRESS_STATE = reonomy_obj.address_state
+                        lldbItem.PROPERTY_ADDRESS_ZIP_CODE = reonomy_obj.address_postal_code
+                    }
+                    
                     lldbItem.GROSS_BUILDING_AREA = reonomy_obj.gross_building_area
                     lldbItem.Account_Name = reonomy_obj.reported_owner_name
 
-                    // separate first and last name
-                    // lldbItem.PRIMARY_CONTACT_FIRST_NAME = reonomy_obj.contact_name
-                    // lldbItem.PRIMARY_CONTACT_LAST_NAME = reonomy_obj.contact_name
-
-                    // TODO: if the name is empty???
+                    // if the name is empty
                     let fullName = reonomy_obj.contact_name
-                    // console.log('fullName = ', fullName)
-
                     if(fullName === null) {
+                        // assign null to first and last names
                         lldbItem.PRIMARY_CONTACT_FIRST_NAME = fullName
                         lldbItem.PRIMARY_CONTACT_LAST_NAME = fullName
                     } else {
+                        // split first and last names and assing them to separate variables
                         let parts = fullName.split(' ') // <----- array
                         if(parts.length > 1) {
                             let firstName = parts.shift()
@@ -288,7 +283,7 @@ app.get('/', async function (req, res) {
                                 if(parts[word_i].indexOf('.') !== -1) {
                                     lastNameAdjusted += ''
                                 } else {
-                                    if(lastNameParts[word_i].length > 2) {
+                                    if(lastNameParts[word_i].length > 1) { // changed from > 2
                                         lastNameAdjusted += lastNameParts[word_i]
                                         if(lastNameParts.length > 1) {
                                             lastNameAdjusted += ' '
@@ -296,13 +291,11 @@ app.get('/', async function (req, res) {
                                     }
                                 }
                             }
-    
                             lldbItem.PRIMARY_CONTACT_FIRST_NAME = firstName
                             lldbItem.PRIMARY_CONTACT_LAST_NAME = lastNameAdjusted
                         }
                     }
                     
-
                     lldbItem.PRIMARY_CONTACT_TITLE = reonomy_obj.contact_title
                     lldbItem.PRIMARY_CONTACT_PHONE = reonomy_obj.contact_phone_1
                     lldbItem.PRIMARY_CONTACT_EMAIL = reonomy_obj.contact_email_1
@@ -381,7 +374,9 @@ app.get('/', async function (req, res) {
     }
 
     // return this
-    res.render('index', {})
+    res.send({
+        message: 'Data from csv processed'
+    })
 })
 
 
@@ -587,6 +582,8 @@ app.post('/add', async (req, res) => {
 // })
 
 // push salesforce data into sql
+
+
 app.post('/postsfdata', async function (req, res) {
 
     const sfData = req.body
