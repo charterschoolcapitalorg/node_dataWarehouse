@@ -10,10 +10,14 @@
 
         div.header {
             width: 100%;
+            /*min-height: 55px;*/
             margin: auto;
-            border: 2px solid #73AD21;
-            border-radius: 5px;
-            background-color: rgb(151, 255, 255);
+            text-align: left;
+            /*border: 2px solid #eee;*/
+            /* */
+            /*border-bottom-right-radius: 10px;*/
+            /*border-bottom-left-radius: 10px;*/
+            /*background-color: #eee;*/
         }
 
         .row:after {
@@ -25,19 +29,16 @@
         .columncontrolpanel {
             float: left;
             width: 20%;
-            height: 500px;
+            height: auto;
             padding: 10px;
-            margin: auto;
+            margin-top: 30px;
+            /*margin: auto;*/
+            box-shadow: -5px -5px 30px #888888;
+            border-radius: 8px;
+            /*border-left: 1px solid #444;*/
         }
 
-        .columnbutton {
-            float: left;
-            width: 20%;
-            height: 350px;
-            padding: 10px;
-        }
-
-        .columnmain {
+        .columnfullpagemain {
             float: left;
             width: 75%;
             padding: 10px;
@@ -46,9 +47,94 @@
             /* text-align: center; */
         }
 
+        .columnbutton {
+            float: left;
+            width: 5%;
+            height: 350px;
+            padding: 10px;
+        }
+
+        .columnmain {
+            float: left;
+            width: 40%;
+            padding: 10px;
+            margin: auto;
+            margin-left: 30px;
+        }
+
+        .columnmainbottom {
+            float: left;
+            width: 75%;
+            padding: 10px;
+            margin: auto;
+            margin-left: 30px;
+        }
+
+
+
+        .columnlastupdate {
+            float: left;
+            width: 15%;
+            padding: 10px;
+            margin: auto;
+            margin-left: 5px;
+            text-align: center;
+        }
+
+
+        .columnbackendresponse {
+            float: left;
+            width: 17%;
+            padding: 10px;
+            margin: auto;
+            margin-left: 5px;
+            text-align: center;
+            background-color: #ffeaa3;
+        }
+
+        .columnbackendresponsemessage {
+            float: left;
+            width: 17%;
+            padding: 10px;
+            margin: auto;
+            margin-left: 5px;
+            text-align: center;
+            background-color: #ffeaa3;
+            min-height: 270px;
+            /*box-shadow: 5px 10px #888888;*/
+        }
+
+        .columnstatus {
+            float: left;
+            width: 10%;
+            padding: 10px;
+            margin: auto;
+            margin-left: 5px;
+            text-align: center;
+        }
+
+        .buildmasterlldb {
+            float: left;
+            width: 12%;
+            padding: 10px;
+            margin: auto;
+            margin-left: 5px;
+            text-align: center;
+        }
+
+        .columnbuildfinallldb {
+            float: left;
+            width: 12%;
+            padding: 10px;
+            margin: auto;
+            margin-left: 5px;
+            text-align: center;
+        }
+
         h3 {
             padding: 2px;
-            text-align: center;
+            text-align: left;
+            font-family: "Lucida Console", "Courier New", monospace;
         }
 
         div.content {
@@ -59,6 +145,7 @@
 
         label.step2 {
             margin: 10px;
+            font-family: "Lucida Console", "Courier New", monospace;
         }
 
         input[type=button],
@@ -67,11 +154,12 @@
             background-color: #2c10ff;
             border: none;
             color: white;
-            padding: 8px 20px;
+            padding: 8px 12px;
             text-decoration: none;
             margin: 2px 1px;
             cursor: pointer;
             border-radius: 5px;
+            font-family: "Lucida Console", "Courier New", monospace;
         }
 
         input:disabled,
@@ -137,7 +225,9 @@
             transition: max-height 0.2s ease-out;
         }
 
-
+        .p3 {
+            font-family: "Lucida Console", "Courier New", monospace;
+        }
 
 
 
@@ -178,88 +268,200 @@
             }
         }
 
-        #myDiv {
-            display: none;
-            content: "";
-            display: table;
-            clear: both;
+
+
+
+
+        /*canvas{
+
+            width:100px !important;
+            height:100px !important;
+          
+          }*/
+
+
+
+        .tab {
+            overflow: hidden;
+            border: 1px solid #ccc;
+            background-color: #f1f1f1;
+        }
+
+        /* Style the buttons inside the tab */
+        .tab button {
+            background-color: inherit;
+            float: left;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 14px 16px;
+            transition: 0.3s;
+            font-size: 17px;
+            font-family: "Lucida Console", "Courier New", monospace;
+        }
+
+        /* Change background color of buttons on hover */
+        .tab button:hover {
+            background-color: #ddd;
+        }
+
+        @keyframes blink {
+            50% {
+                color: transparent
+            }
+        }
+
+        .loader__dot {
+            animation: 1s blink infinite
+        }
+
+        .loader__dot:nth-child(2) {
+            animation-delay: 250ms
+        }
+
+        .loader__dot:nth-child(3) {
+            animation-delay: 500ms
         }
     </style>
 </head>
 
-<!-- <body onload="myFunction()" style="margin:0;"> -->
-
 <body>
 
-
     <!-- <div id="loader"></div> -->
-
-
+    <div class="tab">
+        <button class="tablinks">Home</button>
+        <button class="tablinks">Azure</button>
+        <button class="tablinks">Salesforce</button>
+        <button class="tablinks">Help</button>
+        <button class="tablinks">Refresh</button>
+    </div>
 
     <!-- main div -->
     <!-- <div style="display:none;" id="myDiv" class="row"> -->
     <div class="row">
         <!-- main screen -->
-        <div class="columnmain">
+        <div class="columnfullpagemain">
 
             <!-- Import Data Sources to LLDB (Data Warehouse) -->
             <!-- ========================================= -->
 
             <div class="header">
-                <h3 style="margin: 2px;">Import Data Sources to LLDB (Data Warehouse)</h3>
+                <h3 style="margin: 2px;">Import Data Sources to LLDB</h3>
+            </div>
+
+            <!-- headers -->
+            <div class="row">
+                <div class="columnmain">
+                    <p class="p3" style="margin: 10px; font-weight: bold;">Upload File </p>
+                </div>
+                <div class="columnlastupdate">
+                    <p class="p3" style="margin: 10px; font-weight: bold;">Last Update</p>
+                </div>
+                <div class="columnstatus">
+                    <form id="fakeresponse" method="GET" action="/fake/response" enctype="multipart/form-data">
+                        <input type="submit" id="getproduct" value="Status" style="width: 100%;" />
+                    </form>
+                </div>
+                <div class="buildmasterlldb">
+                    <form id="buildmasterlldb" method="GET" action="/buildmasterlldb" enctype="multipart/form-data">
+                        <input type="submit" value="Master LLDB" style="width: 100%;" />
+                    </form>
+                </div>
+                <div class="columnbackendresponse">
+                    <p class="p3" style="margin: 10px; font-weight: bold;">Server Response</p>
+                </div>
             </div>
 
             <div class="row">
                 <div class="columnmain">
                     <!-- CCD Data -->
                     <form id="postfile" method="POST" action="/postfile" enctype="multipart/form-data">
-                        <label> CCD:
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
                         <input type="file" name="file" />
-                        <input type="submit" />
+                        <input type="submit" value="   Submit CCD    " />
                     </form>
 
                     <!-- CCD Enrollment Data -->
                     <br />
                     <form id="postfile" method="POST" action="/postfile" enctype="multipart/form-data">
-                        <label> CCD Enrollment: &nbsp;</label>
                         <input type="file" name="file" />
-                        <input type="submit" />
+                        <input type="submit" value="Submit Enrollment" />
                     </form>
 
                     <!-- Reonomy Data -->
                     <br />
                     <form id="postfilereonomy" method="POST" action="/postfile" enctype="multipart/form-data">
-                        <label> Reonomy:
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
                         <input type="file" name="file" />
-                        <input type="submit" />
+                        <input type="submit" value=" Submit Reonomy  " />
                     </form>
 
                     <!-- Sate Funding Data -->
                     <br />
                     <form id="postfilestfund" method="POST" action="/postfilestfund" enctype="multipart/form-data">
-                        <label> State Funding:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
                         <input type="file" name="file" />
-                        <input type="submit" disabled />
+                        <input type="submit" value="Submit State Fund" />
                     </form>
 
                     <!-- CoStar Data -->
                     <br />
                     <form id="postfilecostar" method="POST" action="/postfile" enctype="multipart/form-data">
-                        <label>
-                            CoStar:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
                         <input type="file" name="file" />
-                        <input type="submit" />
+                        <input type="submit" value="  Submit CoStar  " />
                     </form>
-
                 </div>
 
-                <div class="columnbutton">
-                    <!-- Refresh upload status -->
-                    <!-- <form id="refresh" method="GET" action="/" enctype="multipart/form-data">
-                        <input type="submit" value="Refresh Upload Status" />
-                    </form> -->
+                <div class="columnlastupdate">
+                    <!-- CCD -->
+                    <p class="p3" style="margin-bottom: 35px; margin-top: 10px">
+                        <%= ccdLastUpdate %>
+                    </p>
+                    <!-- CCD Enr -->
+                    <p class="p3" style="margin-bottom: 35px;  margin-top: 10px">
+                        <%= enrLastUpdate %>
+                    </p>
+                    <!-- Reonomy -->
+                    <p class="p3" style="margin-bottom: 35px;  margin-top: 10px">
+                        <%= reonomyLastUpdate %>
+                    </p>
+                    <!-- St Fund -->
+                    <p class="p3" style="margin-bottom: 35px;  margin-top: 10px">No data</p>
+                    <!-- CoStar -->
+                    <p class="p3" style="margin-bottom: 35px;  margin-top: 10px">
+                        <%= coStarLastUpdate %>
+                    </p>
+                </div>
+
+
+                <div class="columnstatus">
+                    <!-- CCD -->
+                    <p class="p3" style="margin-bottom: 35px; margin-top: 10px">
+                        <%= ccdPipeStatus %>
+                    </p>
+                    <!-- CCD Enr -->
+                    <p class="p3" style="margin-bottom: 35px; margin-top: 10px">
+                        <%= ccdEnrPipeStatus %>
+                    </p>
+                    <!-- Reonomy -->
+                    <p class="p3" style="margin-bottom: 35px; margin-top: 10px">
+                        <%= reonomyPipeStatus %>
+                    </p>
+                    <!-- St Fund -->
+                    <p class="p3" style="margin-bottom: 35px; margin-top: 10px">No data</p>
+                    <!-- CoStar -->
+                    <p class="p3" style="margin-bottom: 35px; margin-top: 10px">
+                        <%= coStarPipeStatus %>
+                    </p>
+                </div>
+
+                <div class="buildmasterlldb">
+                    <p class="p3">Last update {date}</p>
+                </div>
+
+                <div class="columnbackendresponsemessage">
+                    <p class="p3" style="margin-bottom: 35px; margin-top: 10px"><%= serverResponse %> To re-sync Salesforce data click <a href="https://charterschoolcapital--cscdev.sandbox.lightning.force.com/lightning/n/CSC_Data_Hub">link...</a>
+                            <div class="loader"><span class="loader__dot">.</span><span
+                                    class="loader__dot">.</span><span class="loader__dot">.</span></div>
+                    </p>
+
                 </div>
             </div>
 
@@ -269,15 +471,28 @@
 
             <div class="row">
                 <div class="header">
-                    <h3 style="margin: 2px;">Manually Set LLDB Datapoints (Salesforce)</h3>
+                    <h3 style="margin: 2px;">Manually Set LLDB Datapoints</h3>
+                </div>
+
+                <!-- headers -->
+                <div class="row">
+                    <div class="columnmain">
+                        <p class="p3" style="margin: 10px; font-weight: bold;">Enter Values</p>
+                    </div>
+                    <div class="columnlastupdate">
+                        <!-- <form id="add" method="POST" action="/add" enctype="multipart/form-data"> -->
+                            <input id="startBtn" type="submit" value="Add Values" />
+                        <!-- </form> -->
+                    </div>
+                    <div class="columnstatus"></div>
+                    <div class="buildmasterlldb"></div>
+                    <div class="buildmasterlldb"></div>
                 </div>
 
 
                 <form action="/add" method="POST">
                     <div class="columnmain">
 
-                        <label class="step2" style="color: red;">Select State *
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
                         <select id="state" name="state" style="border-color: red" onchange="enableStartBtn()">
                             <option value="selectstate">Select Sate ...</option>
                             <option value="al">AL</option>
@@ -334,86 +549,81 @@
                         </select>
                         <br /><br />
 
-                        <label class="step2">Revenue per Student</label>
-                        <input type="number" step="0.01" id="revenue" name="revenue" placeholder="Enter Revenue per Student ..."
-                            value="" onkeyup="validate()" />
+                        <input type="number" step="0.01" id="revenue" name="revenue"
+                            placeholder="Revenue per Student ..." value="" onkeyup="validate()" />
                         <br /><br />
 
-                        <label class="step2">PSF Discount
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
-                        <input type="number" step="0.01" name="psfdiscount" placeholder="Enter PSF Discount ..." value="" />
+                        <input type="number" step="0.01" name="psfdiscount" placeholder="PSF Discount ..." value="" />
                         <br /><br />
 
-                        <label class="step2">CSC Premium
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
-                        <input type="number" step="0.01" name="cscpremium" placeholder="Enter CSC Premium ..." value="" />
+                        <input type="number" step="0.01" name="cscpremium" placeholder="CSC Premium ..." value="" />
                         <br /><br />
 
-                        <label class="step2">Flat Rate Assumption</label>
-                        <input type="number" step="0.01" name="flatrentassum" placeholder="Enter Flat Rate Assumption ..."
+                        <input type="number" step="0.01" name="flatrentassum" placeholder="Flat Rate Assumption ..."
                             value="" />
                         <br /><br />
 
                     </div>
 
-                    <div class="columnbutton">
-                        <input id="startBtn" type="submit" value="Upload into Salesforce" />
-                    </div>
-
                 </form>
-
-
-
             </div>
         </div>
-
-
-
-
 
         <!-- control panel -->
         <!-- <div class="columncontrolpanel" style="background-color: azure; border: 3px solid #000; border-radius: 10px"> -->
         <div class="columncontrolpanel">
 
+            <div>
+                <p class="p3" style=" font-weight: bold;">Record Count and Data Saturation</p>
+                <canvas id="myChart" ></canvas>
+            </div>
+
+            <table>
+                <tr>
+                    <td><p class="p3">CCD</p></td>
+                    <td><p class="p3">Enrollment</p></td>
+                </tr>
+                <tr>
+                  <td><canvas id="ccdData" style="width:150px !important; height:150px !important;"></canvas></td>
+                  <td><canvas id="enrData" style="width:150px !important; height:150px !important;"></canvas></td>
+                </tr>
+                <tr>
+                    <td><p class="p3">Reonomy</p></td>
+                    <td><p class="p3">CoStar</p></td>
+                </tr>
+                <tr>
+                    <td><canvas id="reonomyData" style="width:150px !important; height:150px !important;"></canvas></td>
+                    <td><canvas id="costarData" style="width:150px !important; height:150px !important;"></canvas></td>
+                </tr>
+            </table>
+
+
             <!-- Section 1 - Analyze LLDB Market Info -->
             <!-- TODO: how many buttons do we need? -->
-            <button class="accordion">Analyze LLDB Market Info</button>
+            <button class="accordion" style="margin-top: 30px;">Analyze LLDB Market Info</button>
             <div class="panel">
-                <form id="getrawlldb" method="GET" action="/getrawlldb" enctype="multipart/form-data">
-                    <input type="submit" value="Build raw LLDB" style="width: 100%;"/>
-                </form>
                 <form id="getlldb" method="GET" action="/getlldb" enctype="multipart/form-data">
-                    <input type="submit" value="Download raw LLDB" style="width: 100%;"/>
+                    <input type="submit" value="Download raw LLDB" style="width: 100%;" />
                 </form>
                 <form id="getsalesforcelldb" method="GET" action="/getsalesforcelldb" enctype="multipart/form-data">
-                    <input type="submit" value="Download SF LLDB" style="width: 100%;"/>
-                </form>
-                <form id="getfinallldb" method="GET" action="/getfinallldb" enctype="multipart/form-data">
-                    <input type="submit" value="Download final LLDB" style="width: 100%;" />
+                    <input type="submit" value="Download SF LLDB" style="width: 100%;" />
                 </form>
             </div>
 
 
             <!-- Section 2 - Expand to Review LLDB Record Counts -->
-            <button class="accordion">LLDB Record Counts</button>
+            <!-- <button class="accordion">LLDB Record Counts</button>
             <div class="panel">
                 <p>Some data here </p>
                 <p>Some data here </p>
                 <p>Some data here </p>
                 <p>Some data here </p>
                 <p>Some data here </p>
-            </div>
+            </div> -->
         </div>
 
 
     </div>
-
-
-
-
-
-
-
 
     <!-- scripts -->
     <!-- this one is for accordion buttons (NOT working in SF iframe) -->
@@ -435,17 +645,163 @@
     </script>
 
 
-    <!-- this one is for the loader -->
-    <!-- this is not working in SF iframe-->
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- main chart -->
     <script>
-        var myVar;
-        function myFunction() {
-            myVar = setTimeout(showPage, 6000);
-        }
-        function showPage() {
-            document.getElementById("loader").style.display = "none";
-            document.getElementById("myDiv").style.display = "block";
-        }
+        const ctx = document.getElementById('myChart');
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['CCD', 'Reonomy', 'Enrollment', 'CoStar', 'Salesforce'],
+                datasets: [{
+                    label: '# of Records',
+                    data: [20, 173, 10025, 42, 1],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(255, 159, 64, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(54, 162, 235, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 99, 132)',
+                        'rgb(255, 159, 64)',
+                        'rgb(153, 102, 255)',
+                        'rgb(75, 192, 192)',
+                        'rgb(54, 162, 235)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                }
+            }
+        });
+    </script>
+
+    <!-- ccd chart -->
+    <script>
+        const ctxccd = document.getElementById('ccdData');
+
+        new Chart(ctxccd, {
+            type: 'pie',
+            data: {
+                labels: ['PA'],
+                datasets: [{
+                    label: '# of Records',
+                    data: [100],
+                    backgroundColor: [
+                        'rgba(153, 102, 255, 0.2)'
+                    ],
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                }
+            }
+        });
+    </script>
+
+    <!-- enrol chart -->
+    <script>
+        const ctxenr = document.getElementById('enrData');
+
+        new Chart(ctxenr, {
+            type: 'pie',
+            data: {
+                labels: ['PA'],
+                datasets: [{
+                    label: '# of Records',
+                    data: [100],
+                    backgroundColor: [
+                    'rgba(255, 205, 86, 0.2)'
+                    ],
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                }
+            }
+        });
+    </script>
+
+    <!-- enrol reonomy -->
+    <script>
+        const ctxreonomy = document.getElementById('reonomyData');
+
+        new Chart(ctxreonomy, {
+            type: 'pie',
+            data: {
+                labels: ['PA'],
+                datasets: [{
+                    label: '# of Records',
+                    data: [100],
+                    backgroundColor: [
+                        'rgba(54, 162, 235, 0.2)'
+                    ],
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                }
+            }
+        });
+    </script>
+
+    <!-- enrol chart -->
+    <script>
+        const ctxcostar = document.getElementById('costarData');
+
+        new Chart(ctxcostar, {
+            type: 'pie',
+            data: {
+                labels: ['PA'],
+                datasets: [{
+                    label: '# of Records',
+                    data: [100],
+                    backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)'
+                    ],
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                }
+            }
+        });
     </script>
 
 </body>

@@ -22,6 +22,7 @@ const azure = require('azure-storage')
 const fileUpload = require("express-fileupload")
 const getStream = require('into-stream')
 var Db = require('./components/dboperations')
+var lu = require('./components/lastupdate')
 const fs = require('fs')
 let converter = require('json-2-csv')
 // View Engine Setup
@@ -32,6 +33,7 @@ const blobService = azure.createBlobService('DefaultEndpointsProtocol=https;Acco
 app.use(express.static('page'))
 
 // alerts 
+// alers dont work here
 // var popup = require('popups')
 // let alert = require('alert')
 
@@ -42,23 +44,72 @@ app.use(bodyParser.json());
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }))
 
-
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
-
-
-
-
+// app start
 // when the page first load or reload
-// TODO: add LOADING spin
-app.get('/', function(req, res){
+app.get('/', async function (req, res) {
     console.log('@@@ main screen loal/re-load')
-    res.render('index', {})
+    res.render('index', {
+        serverResponse: 'Server is ready. Last time Salesforce data has been synced with Azure on {date}.',
+        ccdLastUpdate: await lu.getCcdLastUpdatedDate(),
+        enrLastUpdate: await lu.getEnrLastUpdatedDate(),
+        reonomyLastUpdate: await lu.getReonomyLastUpdatedDate(),
+        coStarLastUpdate: await lu.getCoStarLastUpdatedDate(),
+        ccdPipeStatus: 'No Status', 
+        ccdEnrPipeStatus: 'No Status',
+        reonomyPipeStatus: 'No Status',
+        stFundPipeStatus: 'No Status',
+        coStarPipeStatus: 'No Status'
+    })
+})
+
+// for testing only
+// generate in-rogress fail success response
+// generate response IN PROGRESS and keep it for ... seconds
+// after ... seconds generate respond SUCCESS
+app.get('/fake/response', async function (req, res) {
+    
+    // assign response value
+    ccdPipeStatus = 'response'
+    ccdEnrPipeStatus = 'response'
+    reonomyPipeStatus = 'response'
+    stFundPipeStatus = 'response'
+    coStarPipeStatus = 'response'
+    serverResponse = 'Success. Check Status request has been sent.'
+    
+    res.render('index', {
+        serverResponse: serverResponse,
+        ccdLastUpdate: await lu.getCcdLastUpdatedDate(),
+        enrLastUpdate: await lu.getEnrLastUpdatedDate(),
+        reonomyLastUpdate: await lu.getReonomyLastUpdatedDate(),
+        coStarLastUpdate: await lu.getCoStarLastUpdatedDate(),
+        ccdPipeStatus: ccdPipeStatus,
+        ccdEnrPipeStatus: ccdEnrPipeStatus,
+        reonomyPipeStatus: reonomyPipeStatus,
+        stFundPipeStatus: stFundPipeStatus,
+        coStarPipeStatus: coStarPipeStatus
+    })
 })
 
 
-app.get('/getrawlldb', async function (req, res) {
+// from azure send api call here 
+app.get('/response/success', function (req, res) {
+
+    res.send({
+        message: 'my app returns success'
+    })
+})
+
+
+
+
+
+
+
+
+app.get('/buildmasterlldb', async function (req, res) {
 
     // support last update functionality
     // query sql to find out when the data was updated
@@ -255,47 +306,63 @@ app.get('/getrawlldb', async function (req, res) {
                 var reonomy_obj = reonomyDataArray[reonomy_i]
                 if (ccd_obj.reonomy_id == reonomy_obj.reonomy_id) {
                     // replace school site address data if reonomy data is not null
-                    if(reonomy_obj.address_line_1 !== null && reonomy_obj.address_city !== null && reonomy_obj.address_state !== null && reonomy_obj.address_postal_code !== null) {
+                    if (reonomy_obj.address_line_1 !== null && reonomy_obj.address_city !== null && reonomy_obj.address_state !== null && reonomy_obj.address_postal_code !== null) {
                         lldbItem.PROPERTY_ADDRESS_STREET = reonomy_obj.address_line_1
                         lldbItem.PROPERTY_ADDRESS_CITY = reonomy_obj.address_city
                         lldbItem.PROPERTY_ADDRESS_STATE = reonomy_obj.address_state
                         lldbItem.PROPERTY_ADDRESS_ZIP_CODE = reonomy_obj.address_postal_code
                     }
-                    
+
                     lldbItem.GROSS_BUILDING_AREA = reonomy_obj.gross_building_area
                     lldbItem.Account_Name = reonomy_obj.reported_owner_name
 
                     // if the name is empty
                     let fullName = reonomy_obj.contact_name
-                    if(fullName === null) {
+                    if (fullName === null) {
                         // assign null to first and last names
                         lldbItem.PRIMARY_CONTACT_FIRST_NAME = fullName
                         lldbItem.PRIMARY_CONTACT_LAST_NAME = fullName
                     } else {
                         // split first and last names and assing them to separate variables
                         let parts = fullName.split(' ') // <----- array
-                        if(parts.length > 1) {
+                        if (parts.length > 1) {
                             let firstName = parts.shift()
                             let lastName = parts.join(' ')
                             let lastNameParts = lastName.split(' ') // <----- array
                             let lastNameAdjusted = ''
-                            for(var word_i = 0; word_i < lastNameParts.length; word_i++) {
-                                if(parts[word_i].indexOf('.') !== -1) {
+                            for (var word_i = 0; word_i < lastNameParts.length; word_i++) {
+                                if (parts[word_i].indexOf('.') !== -1) {
                                     lastNameAdjusted += ''
                                 } else {
-                                    if(lastNameParts[word_i].length > 1) { // changed from > 2
+                                    if (lastNameParts[word_i].length > 1) { // changed from > 2
                                         lastNameAdjusted += lastNameParts[word_i]
-                                        if(lastNameParts.length > 1) {
+                                        if (lastNameParts.length > 1) {
                                             lastNameAdjusted += ' '
                                         }
                                     }
                                 }
                             }
                             lldbItem.PRIMARY_CONTACT_FIRST_NAME = firstName
+                            // lldbItem.PRIMARY_CONTACT_LAST_NAME = lastNameAdjusted
+
+                            if (lastNameAdjusted === '') {
+                                for (var wordq_i = 0; wordq_i < lastNameParts.length; wordq_i++) {
+                                    if (parts[wordq_i].indexOf('.') !== -1) {
+                                        lastNameAdjusted += ''
+                                    } else {
+                                        lastNameAdjusted += lastNameParts[wordq_i]
+                                    }
+                                }
+                            }
+
+                            if (lastNameAdjusted === '') {
+                                lastNameAdjusted += 'not defined'
+                            }
+
                             lldbItem.PRIMARY_CONTACT_LAST_NAME = lastNameAdjusted
                         }
                     }
-                    
+
                     lldbItem.PRIMARY_CONTACT_TITLE = reonomy_obj.contact_title
                     lldbItem.PRIMARY_CONTACT_PHONE = reonomy_obj.contact_phone_1
                     lldbItem.PRIMARY_CONTACT_EMAIL = reonomy_obj.contact_email_1
@@ -313,73 +380,272 @@ app.get('/getrawlldb', async function (req, res) {
         // Usefull: check the array before export 
         console.log('-----> my lldb table with ccd+enrollment+costar+reonomy data  ---->', lldbArray.length)
 
-        // STEP 3 - Here I save data into lldb sql table
+        // STEP 3 - Combine raw data with sf data
         // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        if (lldbArray.length !== 0) {
-            let valueString = ''
-            for (var lldb_i = 0; lldb_i < lldbArray.length; lldb_i++) {
-                valueString += '('
-                    + '\'' + lldbArray[lldb_i].Owner_ID + '\'' + ', '                       // nvarchar(50)
-                    + '\'' + lldbArray[lldb_i].Tenant_Name + '\'' + ', '                    // nvarchar(50)
-                    + lldbArray[lldb_i].STUDENT_COUNT + ', '                                // int
-                    + lldbArray[lldb_i].ESTIMATED_REVENUE_PER_STUDENT + ', '                // decimal(18,2)
-                    + '\'' + lldbArray[lldb_i].PROPERTY_ADDRESS_STREET + '\'' + ', '        // nvarchar(50)
-                    + '\'' + lldbArray[lldb_i].PROPERTY_ADDRESS_CITY + '\'' + ', '          // nvarchar(50)
-                    + '\'' + lldbArray[lldb_i].PROPERTY_ADDRESS_STATE + '\'' + ', '         // nvarchar(50)
-                    + '\'' + lldbArray[lldb_i].PROPERTY_ADDRESS_ZIP_CODE + '\'' + ', '      // nvarchar(50)
-                    + lldbArray[lldb_i].GROSS_BUILDING_AREA + ', '                          // decimal(18,2)
-                    + '\'' + lldbArray[lldb_i].MSA + '\'' + ', '                            // nvarchar(50)
-                    + lldbArray[lldb_i].MARKET_CAP_RATE + ', '                              // decimal(18,2)
-                    + lldbArray[lldb_i].MARKET_SALE_PRICE_PER_SF + ', '                     // decimal(18,2)
-                    + '\'' + lldbArray[lldb_i].VALUATION_METHOD + '\'' + ', '               // nvarchar(50)
-                    + lldbArray[lldb_i].CSC_SALE_PRICE_PER_SF_DISCOUNT + ', '               // decimal(18,2)
-                    + lldbArray[lldb_i].CSC_CAP_RATE_PREMIUM + ', '                         // decimal(18,2)
-                    + lldbArray[lldb_i].RENT_TO_REVENUE_FLAT_ASSUMPTION + ', '              // decimal(18,2)
-                    + '\'' + lldbArray[lldb_i].Account_ID + '\'' + ', '                     // nvarchar(50)
-                    + '\'' + lldbArray[lldb_i].Industry + '\'' + ', '                       // nvarchar(50)
-                    + lldbArray[lldb_i].LLDB_Date_Added + ', '                              // date
-                    + lldbArray[lldb_i].LLDB_Last_Updated + ', '                            // date
-                    + '\'' + lldbArray[lldb_i].Currently_Assigned_Broker + '\'' + ', '      // nvarchar(50) <-- change to Id??
-                    + '\'' + lldbArray[lldb_i].PRIMARY_CONTACT_FIRST_NAME + '\'' + ', '     // nvarchar(50)
-                    + '\'' + lldbArray[lldb_i].PRIMARY_CONTACT_LAST_NAME?.replace('\'', '`') + '\'' + ', '      // nvarchar(50)
-                    + '\'' + lldbArray[lldb_i].PRIMARY_CONTACT_TITLE?.replace('\'', '`') + '\'' + ', '          // nvarchar(50)
-                    + '\'' + lldbArray[lldb_i].PRIMARY_CONTACT_PHONE + '\'' + ', '          // nvarchar(50)
-                    + '\'' + lldbArray[lldb_i].PRIMARY_CONTACT_EMAIL + '\'' + ', '          // nvarchar(50)
-                    + '\'' + lldbArray[lldb_i].PRIMARY_CONTACT_ADDRESS + '\'' + ', '        // nvarchar(50)
-                    + '\'' + lldbArray[lldb_i].PRIMARY_CONTACT_CITY + '\'' + ', '           // nvarchar(50)
-                    + '\'' + lldbArray[lldb_i].PRIMARY_CONTACT_STATE + '\'' + ', '          // nvarchar(50)
-                    + '\'' + lldbArray[lldb_i].PRIMARY_CONTACT_ZIP_CODE + '\'' + ', '       // nvarchar(50)
-                    + '\'' + lldbArray[lldb_i].CONTACT_RECORD_TYPE_ID + '\'' + ', '         // nvarchar(50)
-                    + '\'' + lldbArray[lldb_i].TENANT_RECORD_TYPE_ID + '\'' + ', '          // nvarchar(50)
-                    + '\'' + lldbArray[lldb_i].ACCOUNT_RECORD_TYPE_ID + '\'' + ', '         // nvarchar(50)
-                    + '\'' + lldbArray[lldb_i].REONOMY_ID + '\'' + ', '                     // nvarchar(50)
-                    + lldbArray[lldb_i].CCD_ID  + ', '                                              // int
-                    + '\'' + lldbArray[lldb_i].Account_Name + '\''
-                    + '),'
+        if(lldbArray.length !== 0) {
 
+            let rawLldb = lldbArray
+            let sfLldb = []
+
+            await Db.getSalesforceLLDBData()
+                .then((data) => {
+                    sfLldb = data[0]
+                })
+
+            let getsPushedIntoSF = [] // also use to export 
+            let toUpdate = []
+            let toCreate = []
+            const haveBeenProcessed = new Map()
+        
+            const idMap = new Map() // holds reonomy+ccd ids as a key AND record as values
+            for (var i = 0; i < rawLldb.length; i++) {
+                const key = '\'' + rawLldb[i].REONOMY_ID + rawLldb[i].CCD_ID + '\''
+                idMap.set(key, rawLldb[i])
+            }
+        
+            for (var i_upd = 0; i_upd < sfLldb.length; i_upd++) {
+                var key = '\'' + sfLldb[i_upd].REONOMY_ID + sfLldb[i_upd].CCD_ID + '\''
+                if (idMap.has(key)) {
+                    const newDataObject = idMap.get(key)
+                    // here i need to update the values
+                    if (sfLldb[i_upd].Tenant_Name !== newDataObject.Tenant_Name && newDataObject.Tenant_Name !== 'null') {
+                        sfLldb[i_upd].Tenant_Name = newDataObject.Tenant_Name
+                    }
+                    if (sfLldb[i_upd].STUDENT_COUNT !== newDataObject.STUDENT_COUNT && newDataObject.STUDENT_COUNT !== 'null') {
+                        sfLldb[i_upd].STUDENT_COUNT = newDataObject.STUDENT_COUNT
+                    }
+                    if (sfLldb[i_upd].ESTIMATED_REVENUE_PER_STUDENT !== newDataObject.ESTIMATED_REVENUE_PER_STUDENT && newDataObject.ESTIMATED_REVENUE_PER_STUDENT !== 'null') {
+                        sfLldb[i_upd].ESTIMATED_REVENUE_PER_STUDENT = newDataObject.ESTIMATED_REVENUE_PER_STUDENT
+                    }
+                    if (sfLldb[i_upd].PROPERTY_ADDRESS_STREET !== newDataObject.PROPERTY_ADDRESS_STREET && newDataObject.PROPERTY_ADDRESS_STREET !== 'null') {
+                        sfLldb[i_upd].PROPERTY_ADDRESS_STREET = newDataObject.PROPERTY_ADDRESS_STREET
+                    }
+                    if (sfLldb[i_upd].PROPERTY_ADDRESS_CITY !== newDataObject.PROPERTY_ADDRESS_CITY && newDataObject.PROPERTY_ADDRESS_CITY !== 'null') {
+                        sfLldb[i_upd].PROPERTY_ADDRESS_CITY = newDataObject.PROPERTY_ADDRESS_CITY
+                    }
+                    if (sfLldb[i_upd].PROPERTY_ADDRESS_STATE !== newDataObject.PROPERTY_ADDRESS_STATE && newDataObject.PROPERTY_ADDRESS_STATE !== 'null') {
+                        sfLldb[i_upd].PROPERTY_ADDRESS_STATE = newDataObject.PROPERTY_ADDRESS_STATE
+                    }
+                    if (sfLldb[i_upd].PROPERTY_ADDRESS_ZIP_CODE !== newDataObject.PROPERTY_ADDRESS_ZIP_CODE && newDataObject.PROPERTY_ADDRESS_ZIP_CODE !== 'null') {
+                        sfLldb[i_upd].PROPERTY_ADDRESS_ZIP_CODE = newDataObject.PROPERTY_ADDRESS_ZIP_CODE
+                    }
+                    if (sfLldb[i_upd].GROSS_BUILDING_AREA !== newDataObject.GROSS_BUILDING_AREA && newDataObject.GROSS_BUILDING_AREA !== 'null') {
+                        sfLldb[i_upd].GROSS_BUILDING_AREA = newDataObject.GROSS_BUILDING_AREA
+                    }
+                    if (sfLldb[i_upd].MSA !== newDataObject.MSA && newDataObject.MSA !== 'null') {
+                        sfLldb[i_upd].MSA = newDataObject.MSA
+                    }
+                    if (sfLldb[i_upd].MARKET_CAP_RATE !== newDataObject.MARKET_CAP_RATE && newDataObject.MARKET_CAP_RATE !== 'null') {
+                        sfLldb[i_upd].MARKET_CAP_RATE = newDataObject.MARKET_CAP_RATE
+                    }
+                    if (sfLldb[i_upd].MARKET_SALE_PRICE_PER_SF !== newDataObject.MARKET_SALE_PRICE_PER_SF && newDataObject.MARKET_SALE_PRICE_PER_SF !== 'null') {
+                        sfLldb[i_upd].MARKET_SALE_PRICE_PER_SF = newDataObject.MARKET_SALE_PRICE_PER_SF
+                    }
+                    if (sfLldb[i_upd].VALUATION_METHOD !== newDataObject.VALUATION_METHOD && newDataObject.VALUATION_METHOD !== 'null') {
+                        sfLldb[i_upd].VALUATION_METHOD = newDataObject.VALUATION_METHOD
+                    }
+                    if (sfLldb[i_upd].CSC_SALE_PRICE_PER_SF_DISCOUNT !== newDataObject.CSC_SALE_PRICE_PER_SF_DISCOUNT && newDataObject.CSC_SALE_PRICE_PER_SF_DISCOUNT !== 'null') {
+                        sfLldb[i_upd].CSC_SALE_PRICE_PER_SF_DISCOUNT = newDataObject.CSC_SALE_PRICE_PER_SF_DISCOUNT
+                    }
+                    if (sfLldb[i_upd].CSC_CAP_RATE_PREMIUM !== newDataObject.CSC_CAP_RATE_PREMIUM && newDataObject.CSC_CAP_RATE_PREMIUM !== 'null') {
+                        sfLldb[i_upd].CSC_CAP_RATE_PREMIUM = newDataObject.CSC_CAP_RATE_PREMIUM
+                    }
+                    if (sfLldb[i_upd].RENT_TO_REVENUE_FLAT_ASSUMPTION !== newDataObject.RENT_TO_REVENUE_FLAT_ASSUMPTION && newDataObject.RENT_TO_REVENUE_FLAT_ASSUMPTION !== 'null') {
+                        sfLldb[i_upd].RENT_TO_REVENUE_FLAT_ASSUMPTION = newDataObject.RENT_TO_REVENUE_FLAT_ASSUMPTION
+                    }
+                    if (sfLldb[i_upd].Industry !== newDataObject.Industry && newDataObject.Industry !== 'null') {
+                        sfLldb[i_upd].Industry = newDataObject.Industry
+                    }
+                    if (sfLldb[i_upd].LLDB_Date_Added !== newDataObject.LLDB_Date_Added && newDataObject.LLDB_Date_Added !== 'null') {
+                        sfLldb[i_upd].LLDB_Date_Added = newDataObject.LLDB_Date_Added
+                    }
+                    if (sfLldb[i_upd].LLDB_Last_Updated !== newDataObject.LLDB_Last_Updated && newDataObject.LLDB_Last_Updated !== 'null') {
+                        sfLldb[i_upd].LLDB_Last_Updated = newDataObject.LLDB_Last_Updated
+                    }
+        
+        
+                    if (sfLldb[i_upd].Currently_Assigned_Broker !== newDataObject.Currently_Assigned_Broker && newDataObject.Currently_Assigned_Broker !== 'null') {
+                        sfLldb[i_upd].Currently_Assigned_Broker = newDataObject.Currently_Assigned_Broker
+                    }
+                    if (sfLldb[i_upd].PRIMARY_CONTACT_FIRST_NAME !== newDataObject.PRIMARY_CONTACT_FIRST_NAME && newDataObject.PRIMARY_CONTACT_FIRST_NAME !== 'null') {
+                        sfLldb[i_upd].PRIMARY_CONTACT_FIRST_NAME = newDataObject.PRIMARY_CONTACT_FIRST_NAME
+                    }
+                    if (sfLldb[i_upd].PRIMARY_CONTACT_LAST_NAME !== newDataObject.PRIMARY_CONTACT_LAST_NAME && newDataObject.PRIMARY_CONTACT_LAST_NAME !== 'null') {
+                        sfLldb[i_upd].PRIMARY_CONTACT_LAST_NAME = newDataObject.PRIMARY_CONTACT_LAST_NAME
+                    }
+                    if (sfLldb[i_upd].PRIMARY_CONTACT_TITLE !== newDataObject.PRIMARY_CONTACT_TITLE && newDataObject.PRIMARY_CONTACT_TITLE !== 'null') {
+                        sfLldb[i_upd].PRIMARY_CONTACT_TITLE = newDataObject.PRIMARY_CONTACT_TITLE
+                    }
+                    if (sfLldb[i_upd].PRIMARY_CONTACT_PHONE !== newDataObject.PRIMARY_CONTACT_PHONE && newDataObject.PRIMARY_CONTACT_PHONE !== 'null') {
+                        sfLldb[i_upd].PRIMARY_CONTACT_PHONE = newDataObject.PRIMARY_CONTACT_PHONE
+                    }
+                    if (sfLldb[i_upd].PRIMARY_CONTACT_EMAIL !== newDataObject.PRIMARY_CONTACT_EMAIL && newDataObject.PRIMARY_CONTACT_EMAIL !== 'null') {
+                        sfLldb[i_upd].PRIMARY_CONTACT_EMAIL = newDataObject.PRIMARY_CONTACT_EMAIL
+                    }
+                    if (sfLldb[i_upd].PRIMARY_CONTACT_ADDRESS !== newDataObject.PRIMARY_CONTACT_ADDRESS && newDataObject.PRIMARY_CONTACT_ADDRESS !== 'null') {
+                        sfLldb[i_upd].PRIMARY_CONTACT_ADDRESS = newDataObject.PRIMARY_CONTACT_ADDRESS
+                    }
+                    if (sfLldb[i_upd].PRIMARY_CONTACT_CITY !== newDataObject.PRIMARY_CONTACT_CITY && newDataObject.PRIMARY_CONTACT_CITY !== 'null') {
+                        sfLldb[i_upd].PRIMARY_CONTACT_CITY = newDataObject.PRIMARY_CONTACT_CITY
+                    }
+                    if (sfLldb[i_upd].PRIMARY_CONTACT_STATE !== newDataObject.PRIMARY_CONTACT_STATE && newDataObject.PRIMARY_CONTACT_STATE !== 'null') {
+                        sfLldb[i_upd].PRIMARY_CONTACT_STATE = newDataObject.PRIMARY_CONTACT_STATE
+                    }
+                    if (sfLldb[i_upd].PRIMARY_CONTACT_ZIP_CODE !== newDataObject.PRIMARY_CONTACT_ZIP_CODE && newDataObject.PRIMARY_CONTACT_ZIP_CODE !== 'null') {
+                        sfLldb[i_upd].PRIMARY_CONTACT_ZIP_CODE = newDataObject.PRIMARY_CONTACT_ZIP_CODE
+                    }
+        
+                    // TODO: do i need to add ids???
+        
+        
+        
+                    toUpdate.push(sfLldb[i_upd])
+                    haveBeenProcessed.set(key, sfLldb[i_upd])
+                }
+            }
+        
+            for (var i_crt = 0; i_crt < rawLldb.length; i_crt++) {
+                const newKey = '\'' + rawLldb[i_crt].REONOMY_ID + rawLldb[i_crt].CCD_ID + '\''
+                if (!haveBeenProcessed.has(newKey)) {
+                    toCreate.push(rawLldb[i_crt])
+                }
+            }
+        
+            // check final arrays
+            console.log('to update = ', toUpdate)
+            console.log('to create = ', toCreate.length)
+            getsPushedIntoSF = [...toUpdate, ...toCreate]
+            console.log('total count = ', getsPushedIntoSF.length)
+        
+        
+        
+            // Here I save data into lldb sql FINAL table
+            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        
+            if (getsPushedIntoSF.length !== 0) {
+                let finalValueString = ''
+                for (var final_i = 0; final_i < getsPushedIntoSF.length; final_i++) {
+                    finalValueString += '('
+                        + '\'' + getsPushedIntoSF[final_i].Owner_ID + '\'' + ', '                       // nvarchar(50)
+                        + '\'' + getsPushedIntoSF[final_i].Tenant_Name?.replaceAll('\'', '`') + '\'' + ', '                    // nvarchar(50)
+                        + getsPushedIntoSF[final_i].STUDENT_COUNT + ', '                                // int
+                        + getsPushedIntoSF[final_i].ESTIMATED_REVENUE_PER_STUDENT + ', '                // decimal(18,2)
+                        + '\'' + getsPushedIntoSF[final_i].PROPERTY_ADDRESS_STREET?.replaceAll('\'', '`') + '\'' + ', '        // nvarchar(50)
+                        + '\'' + getsPushedIntoSF[final_i].PROPERTY_ADDRESS_CITY?.replace('\'', '`') + '\'' + ', '          // nvarchar(50)
+                        + '\'' + getsPushedIntoSF[final_i].PROPERTY_ADDRESS_STATE + '\'' + ', '         // nvarchar(50)
+                        + '\'' + getsPushedIntoSF[final_i].PROPERTY_ADDRESS_ZIP_CODE + '\'' + ', '      // nvarchar(50)
+                        + getsPushedIntoSF[final_i].GROSS_BUILDING_AREA + ', '                          // decimal(18,2)
+                        + '\'' + getsPushedIntoSF[final_i].MSA + '\'' + ', '                            // nvarchar(50)
+                        + getsPushedIntoSF[final_i].MARKET_CAP_RATE + ', '                              // decimal(18,2)
+                        + getsPushedIntoSF[final_i].MARKET_SALE_PRICE_PER_SF + ', '                     // decimal(18,2)
+                        + '\'' + getsPushedIntoSF[final_i].VALUATION_METHOD + '\'' + ', '               // nvarchar(50)
+                        + getsPushedIntoSF[final_i].CSC_SALE_PRICE_PER_SF_DISCOUNT + ', '               // decimal(18,2)
+                        + getsPushedIntoSF[final_i].CSC_CAP_RATE_PREMIUM + ', '                         // decimal(18,2)
+                        + getsPushedIntoSF[final_i].RENT_TO_REVENUE_FLAT_ASSUMPTION + ', '              // decimal(18,2)
+                        + '\'' + getsPushedIntoSF[final_i].Account_ID + '\'' + ', '                     // nvarchar(50)
+                        + '\'' + getsPushedIntoSF[final_i].Industry + '\'' + ', '                       // nvarchar(50)
+                        + getsPushedIntoSF[final_i].LLDB_Date_Added + ', '                              // date
+                        + getsPushedIntoSF[final_i].LLDB_Last_Updated + ', '                            // date
+                        + '\'' + getsPushedIntoSF[final_i].Currently_Assigned_Broker + '\'' + ', '      // nvarchar(50) <-- change to Id??
+                        + '\'' + getsPushedIntoSF[final_i].PRIMARY_CONTACT_FIRST_NAME + '\'' + ', '     // nvarchar(50)
+                        + '\'' + getsPushedIntoSF[final_i].PRIMARY_CONTACT_LAST_NAME + '\'' + ', '      // nvarchar(50)
+                        + '\'' + getsPushedIntoSF[final_i].PRIMARY_CONTACT_TITLE?.replace('\'', '`') + '\'' + ', '          // nvarchar(50)
+                        + '\'' + getsPushedIntoSF[final_i].PRIMARY_CONTACT_PHONE + '\'' + ', '          // nvarchar(50)
+                        + '\'' + getsPushedIntoSF[final_i].PRIMARY_CONTACT_EMAIL + '\'' + ', '          // nvarchar(50)
+                        + '\'' + getsPushedIntoSF[final_i].PRIMARY_CONTACT_ADDRESS + '\'' + ', '        // nvarchar(50)
+                        + '\'' + getsPushedIntoSF[final_i].PRIMARY_CONTACT_CITY + '\'' + ', '           // nvarchar(50)
+                        + '\'' + getsPushedIntoSF[final_i].PRIMARY_CONTACT_STATE + '\'' + ', '          // nvarchar(50)
+                        + '\'' + getsPushedIntoSF[final_i].PRIMARY_CONTACT_ZIP_CODE + '\'' + ', '       // nvarchar(50)
+                        + '\'' + getsPushedIntoSF[final_i].CONTACT_RECORD_TYPE_ID + '\'' + ', '         // nvarchar(50)
+                        + '\'' + getsPushedIntoSF[final_i].TENANT_RECORD_TYPE_ID + '\'' + ', '          // nvarchar(50)
+                        + '\'' + getsPushedIntoSF[final_i].ACCOUNT_RECORD_TYPE_ID + '\'' + ', '         // nvarchar(50)
+                        + '\'' + getsPushedIntoSF[final_i].REONOMY_ID + '\'' + ', '                     // nvarchar(50)
+                        + getsPushedIntoSF[final_i].CCD_ID + ', '                                             // int
+                        + '\'' + getsPushedIntoSF[final_i].Account_Name + '\''
+                        + '),'
+                }
+                finalValueString = finalValueString.substring(0, finalValueString.length - 1)
+
+
+
+
+                // delete
+                    // get the LLDB json file saved
+    let containerName = 'charter-lldb'
+    let blobName = 'charter-lldb/data.json'
+    let streamLength = finalValueString.length // string length, not the array length
+    let queryString = 'INSERT charter_lldb_final (Owner_ID, Tenant_Name, STUDENT_COUNT, ESTIMATED_REVENUE_PER_STUDENT, PROPERTY_ADDRESS_STREET, PROPERTY_ADDRESS_CITY, PROPERTY_ADDRESS_STATE, PROPERTY_ADDRESS_ZIP_CODE, GROSS_BUILDING_AREA, MSA, MARKET_CAP_RATE, MARKET_SALE_PRICE_PER_SF, VALUATION_METHOD, CSC_SALE_PRICE_PER_SF_DISCOUNT, CSC_CAP_RATE_PREMIUM, RENT_TO_REVENUE_FLAT_ASSUMPTION, Account_ID, Industry, LLDB_Date_Added, LLDB_Last_Updated, Currently_Assigned_Broker, PRIMARY_CONTACT_FIRST_NAME, PRIMARY_CONTACT_LAST_NAME, PRIMARY_CONTACT_TITLE, PRIMARY_CONTACT_PHONE, PRIMARY_CONTACT_EMAIL, PRIMARY_CONTACT_ADDRESS, PRIMARY_CONTACT_CITY, PRIMARY_CONTACT_STATE, PRIMARY_CONTACT_ZIP_CODE, CONTACT_RECORD_TYPE_ID, TENANT_RECORD_TYPE_ID, ACCOUNT_RECORD_TYPE_ID, REONOMY_ID, CCD_ID, Account_Name) SELECT * FROM (VALUES ' + finalValueString + ') AS temp (Owner_ID, Tenant_Name, STUDENT_COUNT, ESTIMATED_REVENUE_PER_STUDENT, PROPERTY_ADDRESS_STREET, PROPERTY_ADDRESS_CITY, PROPERTY_ADDRESS_STATE, PROPERTY_ADDRESS_ZIP_CODE, GROSS_BUILDING_AREA, MSA, MARKET_CAP_RATE, MARKET_SALE_PRICE_PER_SF, VALUATION_METHOD, CSC_SALE_PRICE_PER_SF_DISCOUNT, CSC_CAP_RATE_PREMIUM, RENT_TO_REVENUE_FLAT_ASSUMPTION, Account_ID, Industry, LLDB_Date_Added, LLDB_Last_Updated, Currently_Assigned_Broker, PRIMARY_CONTACT_FIRST_NAME, PRIMARY_CONTACT_LAST_NAME, PRIMARY_CONTACT_TITLE, PRIMARY_CONTACT_PHONE, PRIMARY_CONTACT_EMAIL, PRIMARY_CONTACT_ADDRESS, PRIMARY_CONTACT_CITY, PRIMARY_CONTACT_STATE, PRIMARY_CONTACT_ZIP_CODE, CONTACT_RECORD_TYPE_ID, TENANT_RECORD_TYPE_ID, ACCOUNT_RECORD_TYPE_ID, REONOMY_ID, CCD_ID, Account_Name)'
+    let stream = getStream(queryString)
+
+    blobService.createBlockBlobFromStream(
+        containerName,
+        blobName,
+        stream,
+        streamLength,
+        (err) => {
+            if (!err) {
+                res.send({
+                    message: 'LLDB json data have been saved.'
+                })
+            } else {
+                res.send({
+                    message: 'ERROR: Something went wrong.'
+                })
+            }
+        }
+    )
+                // delete
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+                // Db.insertFinalLLDB(finalValueString)
             }
 
-            valueString = valueString.substring(0, valueString.length - 1)
-
-            // check my query string
-            // console.log('------> my sql query -----> ')
-            // console.log(valueString)
-
-            Db.insertLLDB(valueString)
+        } else {
+            res.render('index', {
+                serverResponse: 'Error. There is no data to process. Ensure you have CCD, Reonomy, Enrollment, and CoStar data in the system.',
+                ccdLastUpdate: await lu.getCcdLastUpdatedDate(),
+                enrLastUpdate: await lu.getEnrLastUpdatedDate(),
+                reonomyLastUpdate: await lu.getReonomyLastUpdatedDate(),
+                coStarLastUpdate: await lu.getCoStarLastUpdatedDate(),
+                ccdPipeStatus: 'No status',
+                ccdEnrPipeStatus: 'No status',
+                reonomyPipeStatus: 'No status',
+                stFundPipeStatus: 'No Status',
+                coStarPipeStatus: 'No Status'
+            })
         }
-
-
 
     }
 
-    // return this
-    res.send({
-        message: 'Data from csv processed'
+    res.render('index', {
+        serverResponse: 'Success. Data from csv and Salesforce have been processed and Master LLDB table compiled.',
+        ccdLastUpdate: await lu.getCcdLastUpdatedDate(),
+        enrLastUpdate: await lu.getEnrLastUpdatedDate(),
+        reonomyLastUpdate: await lu.getReonomyLastUpdatedDate(),
+        coStarLastUpdate: await lu.getCoStarLastUpdatedDate(),
+        ccdPipeStatus: 'No status',
+        ccdEnrPipeStatus: 'No status',
+        reonomyPipeStatus: 'No status',
+        stFundPipeStatus: 'No Status',
+        coStarPipeStatus: 'No Status'
     })
 })
 
-
+// DOESN't need res.render
 // get lldb that was made out of raw data
 app.get('/getlldb', async function (req, res) {
     await Db.getLLDBData()
@@ -400,6 +666,7 @@ app.get('/getlldb', async function (req, res) {
 
 })
 
+// DOESN't need res.render
 // get lldb that was made out of salesforce data
 app.get('/getsalesforcelldb', async function (req, res) {
     await Db.getSalesforceLLDBData()
@@ -421,6 +688,8 @@ app.get('/getsalesforcelldb', async function (req, res) {
 })
 
 
+
+
 // File upload
 // TODO: make one POST per form, rater than all in one
 app.post('/postfile',
@@ -430,8 +699,17 @@ app.post('/postfile',
         const files = req.files
 
         if (!req.files) {
-            res.send({
-                message: 'No files attached'
+            res.render('index', {
+                serverResponse: 'Error. No files attached. Attach csv and try again.',
+                ccdLastUpdate: 'No data',
+                enrLastUpdate: 'No data',
+                reonomyLastUpdate: 'No data',
+                coStarLastUpdate: 'No data',
+                ccdPipeStatus: 'No status',
+                ccdEnrPipeStatus: 'No Status',
+                reonomyPipeStatus: 'No status',
+                stFundPipeStatus: 'No Status',
+                coStarPipeStatus: 'No Status'
             })
         } else {
             const rawBlobName = files.file.name
@@ -477,30 +755,79 @@ app.post('/postfile',
                 (err) => {
                     if (!err) {
                         if (rawBlobName == 'ccd_sch.csv') {
-                            res.send({
-                                message: 'CCD data processing'
+
+                            res.render('index', {
+                                serverResponse: 'Success. CCD data file ccd.csv has been submitted',
+                                ccdLastUpdate: 'No data',
+                                enrLastUpdate: 'No data',
+                                reonomyLastUpdate: 'No data',
+                                coStarLastUpdate: 'No data',
+                                ccdPipeStatus: 'In Progress',
+                                ccdEnrPipeStatus: 'No status',
+                                reonomyPipeStatus: 'No status',
+                                stFundPipeStatus: 'No Status',
+                                coStarPipeStatus: 'No Status'
                             })
                         }
                         if (rawBlobName == 'reonomy.csv') {
-                            res.send({
-                                message: 'Reonomy data processing'
+
+                            res.render('index', {
+                                serverResponse: 'Success. Reonomy data file reonomy.csv has been submitted',
+                                ccdLastUpdate: 'No data',
+                                enrLastUpdate: 'No data',
+                                reonomyLastUpdate: 'No data',
+                                coStarLastUpdate: 'No data',
+                                ccdPipeStatus: 'No status',
+                                ccdEnrPipeStatus: 'No status',
+                                reonomyPipeStatus: 'In Progress',
+                                stFundPipeStatus: 'No Status',
+                                coStarPipeStatus: 'No Status'
                             })
                         }
                         if (rawBlobName == 'ccd-enrollment.csv') {
-                            res.send({
-                                message: 'CCD-Enrollment data processing'
+
+                            res.render('index', {
+                                serverResponse: 'Success. Enrollment data file ccd-enrollment.csv has been submitted',
+                                ccdLastUpdate: 'No data',
+                                enrLastUpdate: 'No data',
+                                reonomyLastUpdate: 'No data',
+                                coStarLastUpdate: 'No data',
+                                ccdPipeStatus: 'No status',
+                                ccdEnrPipeStatus: 'In Progress',
+                                reonomyPipeStatus: 'No status',
+                                stFundPipeStatus: 'No Status',
+                                coStarPipeStatus: 'No Status'
                             })
                         }
                         if (rawBlobName == 'costar.csv') {
-                            res.send({
-                                message: 'Costar data processing'
+
+                            res.render('index', {
+                                serverResponse: 'Success. CoStar data file costar.csv has been submitted',
+                                ccdLastUpdate: 'No data',
+                                enrLastUpdate: 'No data',
+                                reonomyLastUpdate: 'No data',
+                                coStarLastUpdate: 'No data',
+                                ccdPipeStatus: 'No status',
+                                ccdEnrPipeStatus: 'No Status',
+                                reonomyPipeStatus: 'No status',
+                                stFundPipeStatus: 'No Status',
+                                coStarPipeStatus: 'In Progress'
                             })
                         }
 
                     } else {
-                        // res.render("index", { errorMessage: "ERROR: Something went wrong." })
-                        res.send({
-                            message: 'ERROR: Something went wrong'
+
+                        res.render('index', {
+                            serverResponse: 'Error. Something went wrong. Ensure files named correctly and data type in CSV is general.',
+                            ccdLastUpdate: 'No data',
+                            enrLastUpdate: 'No data',
+                            reonomyLastUpdate: 'No data',
+                            coStarLastUpdate: 'No data',
+                            ccdPipeStatus: 'No status',
+                            ccdEnrPipeStatus: 'No Status',
+                            reonomyPipeStatus: 'No status',
+                            stFundPipeStatus: 'No Status',
+                            coStarPipeStatus: 'No Status'
                         })
                     }
                 }
@@ -539,51 +866,59 @@ app.post('/add', async (req, res) => {
             console.log('setString ----->', setString)
             Db.insertLLDBman(enteredData.state, setString)
 
-            // return to user
-            res.send({
-                message: 'lldb has been updated'
+            res.render('index', {
+                serverResponse: 'Success. LLDB table has been updated with the data you entered.',
+                ccdLastUpdate: await lu.getCcdLastUpdatedDate(),
+                enrLastUpdate: await lu.getEnrLastUpdatedDate(),
+                reonomyLastUpdate: await lu.getReonomyLastUpdatedDate(),
+                coStarLastUpdate: await lu.getCoStarLastUpdatedDate(),
+                ccdPipeStatus: 'No status',
+                ccdEnrPipeStatus: 'No Status',
+                reonomyPipeStatus: 'No status',
+                stFundPipeStatus: 'No Status',
+                coStarPipeStatus: 'No Status'
             })
 
         } else {
             console.log('No values have been entered')
-            // return to user
-            res.send({
-                message: 'Please enter values'
+
+            res.render('index', {
+                serverResponse: 'Error. Please enter values below.',
+                ccdLastUpdate: await lu.getCcdLastUpdatedDate(),
+                enrLastUpdate: await lu.getEnrLastUpdatedDate(),
+                reonomyLastUpdate: await lu.getReonomyLastUpdatedDate(),
+                coStarLastUpdate: await lu.getCoStarLastUpdatedDate(),
+                ccdPipeStatus: 'No status',
+                ccdEnrPipeStatus: 'No Status',
+                reonomyPipeStatus: 'No status',
+                stFundPipeStatus: 'No Status',
+                coStarPipeStatus: 'No Status'
             })
         }
 
     } else {
         console.log('State has not been selected')
-        // return to user
-        res.send({
-            message: 'Please choose state'
+
+        res.render('index', {
+            serverResponse: 'Error. State has not been selected. Please choose state below.',
+            ccdLastUpdate: await lu.getCcdLastUpdatedDate(),
+            enrLastUpdate: await lu.getEnrLastUpdatedDate(),
+            reonomyLastUpdate: await lu.getReonomyLastUpdatedDate(),
+            coStarLastUpdate: await lu.getCoStarLastUpdatedDate(),
+            ccdPipeStatus: 'No status',
+            ccdEnrPipeStatus: 'No Status',
+            reonomyPipeStatus: 'No status',
+            stFundPipeStatus: 'No Status',
+            coStarPipeStatus: 'No Status'
         })
     }
 })
 
 
-// push salesforce data into sql
-// app.post('/postsfdata', async function (req, res) {
-//     const rawBody = req.body
-//     console.log(rawBody)
-//     // console.log(JSON.stringify(rawBody))
-//     // const dataFromSalesforce = req.body.testing
-//     // const testData = 'testData string'
-//     // console.log('my req.body = ', req.body)
-//     // console.log('my req.body.testing = ', req.body.testing) // req.body.testing is undefined !!!
-//     // Db.insertTestData(req.body.testing)
-
-//     // return to user
-//     res.send({
-//         // message: req.body 
-//         // + '; ' + req.body.testing + '; ' + JSON.parse(req.body) + '; ' + JSON.parse(req.body).testing + '; ' + + JSON.stringify(req.body) + '; ' + JSON.stringify(req.body).testing
-//         message: 'here, ' + JSON.stringify(rawBody)
-//     })
-// })
 
 // push salesforce data into sql
-
-
+// from salesforce send api call to this endpoint
+// dont need req.render
 app.post('/postsfdata', async function (req, res) {
 
     const sfData = req.body
@@ -635,7 +970,6 @@ app.post('/postsfdata', async function (req, res) {
 
     valueString = valueString.substring(0, valueString.length - 1)
     console.log(valueString)
-    // uncomment below!!!!!
     Db.insertTestData(valueString)
 
     // return to user
@@ -643,285 +977,6 @@ app.post('/postsfdata', async function (req, res) {
         message: req.body
     })
 })
-
-
-
-
-
-
-// get final lldb
-app.get('/getfinallldb', async function (req, res) {
-
-    let rawLldb = []
-    let sfLldb = []
-
-    await Db.getLLDBData()
-        .then((data) => {
-            rawLldb = data[0]
-        })
-
-    await Db.getSalesforceLLDBData()
-        .then((data) => {
-            sfLldb = data[0]
-        })
-
-    // console.log('raw length = ', rawLldb.length)
-    // console.log('sf length = ', sfLldb.length)
-
-    let getsPushedIntoSF = [] // also use to export 
-    let toUpdate = []
-    let toCreate = []
-    const haveBeenProcessed = new Map()
-
-    const idMap = new Map() // holds reonomy+ccd ids as a key AND record as values
-    for (var i = 0; i < rawLldb.length; i++) {
-        const key = '\'' + rawLldb[i].REONOMY_ID + rawLldb[i].CCD_ID + '\''
-        idMap.set(key, rawLldb[i])
-    }
-
-    for (var i_upd = 0; i_upd < sfLldb.length; i_upd++) {
-        var key = '\'' + sfLldb[i_upd].REONOMY_ID + sfLldb[i_upd].CCD_ID + '\''
-        if (idMap.has(key)) {
-            const newDataObject = idMap.get(key)
-            // here i need to update the values
-            if (sfLldb[i_upd].Tenant_Name !== newDataObject.Tenant_Name && newDataObject.Tenant_Name !== 'null') {
-                sfLldb[i_upd].Tenant_Name = newDataObject.Tenant_Name
-            }
-            if (sfLldb[i_upd].STUDENT_COUNT !== newDataObject.STUDENT_COUNT && newDataObject.STUDENT_COUNT !== 'null') {
-                sfLldb[i_upd].STUDENT_COUNT = newDataObject.STUDENT_COUNT
-            }
-            if (sfLldb[i_upd].ESTIMATED_REVENUE_PER_STUDENT !== newDataObject.ESTIMATED_REVENUE_PER_STUDENT && newDataObject.ESTIMATED_REVENUE_PER_STUDENT !== 'null') {
-                sfLldb[i_upd].ESTIMATED_REVENUE_PER_STUDENT = newDataObject.ESTIMATED_REVENUE_PER_STUDENT
-            }
-            if (sfLldb[i_upd].PROPERTY_ADDRESS_STREET !== newDataObject.PROPERTY_ADDRESS_STREET && newDataObject.PROPERTY_ADDRESS_STREET !== 'null') {
-                sfLldb[i_upd].PROPERTY_ADDRESS_STREET = newDataObject.PROPERTY_ADDRESS_STREET
-            }
-            if (sfLldb[i_upd].PROPERTY_ADDRESS_CITY !== newDataObject.PROPERTY_ADDRESS_CITY && newDataObject.PROPERTY_ADDRESS_CITY !== 'null') {
-                sfLldb[i_upd].PROPERTY_ADDRESS_CITY = newDataObject.PROPERTY_ADDRESS_CITY
-            }
-            if (sfLldb[i_upd].PROPERTY_ADDRESS_STATE !== newDataObject.PROPERTY_ADDRESS_STATE && newDataObject.PROPERTY_ADDRESS_STATE !== 'null') {
-                sfLldb[i_upd].PROPERTY_ADDRESS_STATE = newDataObject.PROPERTY_ADDRESS_STATE
-            }
-            if (sfLldb[i_upd].PROPERTY_ADDRESS_ZIP_CODE !== newDataObject.PROPERTY_ADDRESS_ZIP_CODE && newDataObject.PROPERTY_ADDRESS_ZIP_CODE !== 'null') {
-                sfLldb[i_upd].PROPERTY_ADDRESS_ZIP_CODE = newDataObject.PROPERTY_ADDRESS_ZIP_CODE
-            }
-            if (sfLldb[i_upd].GROSS_BUILDING_AREA !== newDataObject.GROSS_BUILDING_AREA && newDataObject.GROSS_BUILDING_AREA !== 'null') {
-                sfLldb[i_upd].GROSS_BUILDING_AREA = newDataObject.GROSS_BUILDING_AREA
-            }
-            if (sfLldb[i_upd].MSA !== newDataObject.MSA && newDataObject.MSA !== 'null') {
-                sfLldb[i_upd].MSA = newDataObject.MSA
-            }
-            if (sfLldb[i_upd].MARKET_CAP_RATE !== newDataObject.MARKET_CAP_RATE && newDataObject.MARKET_CAP_RATE !== 'null') {
-                sfLldb[i_upd].MARKET_CAP_RATE = newDataObject.MARKET_CAP_RATE
-            }
-            if (sfLldb[i_upd].MARKET_SALE_PRICE_PER_SF !== newDataObject.MARKET_SALE_PRICE_PER_SF && newDataObject.MARKET_SALE_PRICE_PER_SF !== 'null') {
-                sfLldb[i_upd].MARKET_SALE_PRICE_PER_SF = newDataObject.MARKET_SALE_PRICE_PER_SF
-            }
-            if (sfLldb[i_upd].VALUATION_METHOD !== newDataObject.VALUATION_METHOD && newDataObject.VALUATION_METHOD !== 'null') {
-                sfLldb[i_upd].VALUATION_METHOD = newDataObject.VALUATION_METHOD
-            }
-            if (sfLldb[i_upd].CSC_SALE_PRICE_PER_SF_DISCOUNT !== newDataObject.CSC_SALE_PRICE_PER_SF_DISCOUNT && newDataObject.CSC_SALE_PRICE_PER_SF_DISCOUNT !== 'null') {
-                sfLldb[i_upd].CSC_SALE_PRICE_PER_SF_DISCOUNT = newDataObject.CSC_SALE_PRICE_PER_SF_DISCOUNT
-            }
-            if (sfLldb[i_upd].CSC_CAP_RATE_PREMIUM !== newDataObject.CSC_CAP_RATE_PREMIUM && newDataObject.CSC_CAP_RATE_PREMIUM !== 'null') {
-                sfLldb[i_upd].CSC_CAP_RATE_PREMIUM = newDataObject.CSC_CAP_RATE_PREMIUM
-            }
-            if (sfLldb[i_upd].RENT_TO_REVENUE_FLAT_ASSUMPTION !== newDataObject.RENT_TO_REVENUE_FLAT_ASSUMPTION && newDataObject.RENT_TO_REVENUE_FLAT_ASSUMPTION !== 'null') {
-                sfLldb[i_upd].RENT_TO_REVENUE_FLAT_ASSUMPTION = newDataObject.RENT_TO_REVENUE_FLAT_ASSUMPTION
-            }
-            if (sfLldb[i_upd].Industry !== newDataObject.Industry && newDataObject.Industry !== 'null') {
-                sfLldb[i_upd].Industry = newDataObject.Industry
-            }
-            if (sfLldb[i_upd].LLDB_Date_Added !== newDataObject.LLDB_Date_Added && newDataObject.LLDB_Date_Added !== 'null') {
-                sfLldb[i_upd].LLDB_Date_Added = newDataObject.LLDB_Date_Added
-            }
-            if (sfLldb[i_upd].LLDB_Last_Updated !== newDataObject.LLDB_Last_Updated && newDataObject.LLDB_Last_Updated !== 'null') {
-                sfLldb[i_upd].LLDB_Last_Updated = newDataObject.LLDB_Last_Updated
-            }
-
-
-            if (sfLldb[i_upd].Currently_Assigned_Broker !== newDataObject.Currently_Assigned_Broker && newDataObject.Currently_Assigned_Broker !== 'null') {
-                sfLldb[i_upd].Currently_Assigned_Broker = newDataObject.Currently_Assigned_Broker
-            }
-            if (sfLldb[i_upd].PRIMARY_CONTACT_FIRST_NAME !== newDataObject.PRIMARY_CONTACT_FIRST_NAME && newDataObject.PRIMARY_CONTACT_FIRST_NAME !== 'null') {
-                sfLldb[i_upd].PRIMARY_CONTACT_FIRST_NAME = newDataObject.PRIMARY_CONTACT_FIRST_NAME
-            }
-            if (sfLldb[i_upd].PRIMARY_CONTACT_LAST_NAME !== newDataObject.PRIMARY_CONTACT_LAST_NAME && newDataObject.PRIMARY_CONTACT_LAST_NAME !== 'null') {
-                sfLldb[i_upd].PRIMARY_CONTACT_LAST_NAME = newDataObject.PRIMARY_CONTACT_LAST_NAME
-            }
-            if (sfLldb[i_upd].PRIMARY_CONTACT_TITLE !== newDataObject.PRIMARY_CONTACT_TITLE && newDataObject.PRIMARY_CONTACT_TITLE !== 'null') {
-                sfLldb[i_upd].PRIMARY_CONTACT_TITLE = newDataObject.PRIMARY_CONTACT_TITLE
-            }
-            if (sfLldb[i_upd].PRIMARY_CONTACT_PHONE !== newDataObject.PRIMARY_CONTACT_PHONE && newDataObject.PRIMARY_CONTACT_PHONE !== 'null') {
-                sfLldb[i_upd].PRIMARY_CONTACT_PHONE = newDataObject.PRIMARY_CONTACT_PHONE
-            }
-            if (sfLldb[i_upd].PRIMARY_CONTACT_EMAIL !== newDataObject.PRIMARY_CONTACT_EMAIL && newDataObject.PRIMARY_CONTACT_EMAIL !== 'null') {
-                sfLldb[i_upd].PRIMARY_CONTACT_EMAIL = newDataObject.PRIMARY_CONTACT_EMAIL
-            }
-            if (sfLldb[i_upd].PRIMARY_CONTACT_ADDRESS !== newDataObject.PRIMARY_CONTACT_ADDRESS && newDataObject.PRIMARY_CONTACT_ADDRESS !== 'null') {
-                sfLldb[i_upd].PRIMARY_CONTACT_ADDRESS = newDataObject.PRIMARY_CONTACT_ADDRESS
-            }
-            if (sfLldb[i_upd].PRIMARY_CONTACT_CITY !== newDataObject.PRIMARY_CONTACT_CITY && newDataObject.PRIMARY_CONTACT_CITY !== 'null') {
-                sfLldb[i_upd].PRIMARY_CONTACT_CITY = newDataObject.PRIMARY_CONTACT_CITY
-            }
-            if (sfLldb[i_upd].PRIMARY_CONTACT_STATE !== newDataObject.PRIMARY_CONTACT_STATE && newDataObject.PRIMARY_CONTACT_STATE !== 'null') {
-                sfLldb[i_upd].PRIMARY_CONTACT_STATE = newDataObject.PRIMARY_CONTACT_STATE
-            }
-            if (sfLldb[i_upd].PRIMARY_CONTACT_ZIP_CODE !== newDataObject.PRIMARY_CONTACT_ZIP_CODE && newDataObject.PRIMARY_CONTACT_ZIP_CODE !== 'null') {
-                sfLldb[i_upd].PRIMARY_CONTACT_ZIP_CODE = newDataObject.PRIMARY_CONTACT_ZIP_CODE
-            }
-
-                        // TODO: do i need to add ids???
-
-
-
-            toUpdate.push(sfLldb[i_upd])
-            haveBeenProcessed.set(key, sfLldb[i_upd])
-        }
-    }
-
-    for (var i_crt = 0; i_crt < rawLldb.length; i_crt++) {
-        const newKey = '\'' + rawLldb[i_crt].REONOMY_ID + rawLldb[i_crt].CCD_ID + '\''
-        if (!haveBeenProcessed.has(newKey)) {
-            toCreate.push(rawLldb[i_crt])
-        }
-    }
-
-    // check final arrays
-    console.log('to update = ', toUpdate)
-    console.log('to create = ', toCreate.length)
-    getsPushedIntoSF = [...toUpdate, ...toCreate]
-    console.log('total count = ', getsPushedIntoSF.length)
-
-
-    // res.end()
-    // get my csv
-    // UNCOMMENT below
-    // converter.json2csv(getsPushedIntoSF)
-    //     .then((csv) => {
-    //         // console.log('csv = ', csv)
-    //         //this statement tells the browser what type of data is supposed to download and force it to download
-    //         res.writeHead(200, {
-    //             'Content-Type': 'text/csv',
-    //             'Content-Disposition': 'attachment; filename=final_lldb_export.csv'
-    //         });
-    //         // whereas this part is in charge of telling what data should be parsed and be downloaded
-    //         res.end(csv, "binary");
-    //     })
-    // UNCOMMENT 
-    // whatever is above, it is WORKING
-
-
-
-    // Here I save data into lldb sql FINAL table
-        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-        if (getsPushedIntoSF.length !== 0) {
-            let finalValueString = ''
-            for (var final_i = 0; final_i < getsPushedIntoSF.length; final_i++) {
-                finalValueString += '('
-                + '\'' + getsPushedIntoSF[final_i].Owner_ID + '\'' + ', '                       // nvarchar(50)
-                    + '\'' + getsPushedIntoSF[final_i].Tenant_Name + '\'' + ', '                    // nvarchar(50)
-                    + getsPushedIntoSF[final_i].STUDENT_COUNT + ', '                                // int
-                    + getsPushedIntoSF[final_i].ESTIMATED_REVENUE_PER_STUDENT + ', '                // decimal(18,2)
-                    + '\'' + getsPushedIntoSF[final_i].PROPERTY_ADDRESS_STREET + '\'' + ', '        // nvarchar(50)
-                    + '\'' + getsPushedIntoSF[final_i].PROPERTY_ADDRESS_CITY + '\'' + ', '          // nvarchar(50)
-                    + '\'' + getsPushedIntoSF[final_i].PROPERTY_ADDRESS_STATE + '\'' + ', '         // nvarchar(50)
-                    + '\'' + getsPushedIntoSF[final_i].PROPERTY_ADDRESS_ZIP_CODE + '\'' + ', '      // nvarchar(50)
-                    + getsPushedIntoSF[final_i].GROSS_BUILDING_AREA + ', '                          // decimal(18,2)
-                    + '\'' + getsPushedIntoSF[final_i].MSA + '\'' + ', '                            // nvarchar(50)
-                    + getsPushedIntoSF[final_i].MARKET_CAP_RATE + ', '                              // decimal(18,2)
-                    + getsPushedIntoSF[final_i].MARKET_SALE_PRICE_PER_SF + ', '                     // decimal(18,2)
-                    + '\'' + getsPushedIntoSF[final_i].VALUATION_METHOD + '\'' + ', '               // nvarchar(50)
-                    + getsPushedIntoSF[final_i].CSC_SALE_PRICE_PER_SF_DISCOUNT + ', '               // decimal(18,2)
-                    + getsPushedIntoSF[final_i].CSC_CAP_RATE_PREMIUM + ', '                         // decimal(18,2)
-                    + getsPushedIntoSF[final_i].RENT_TO_REVENUE_FLAT_ASSUMPTION + ', '              // decimal(18,2)
-                    + '\'' + getsPushedIntoSF[final_i].Account_ID + '\'' + ', '                     // nvarchar(50)
-                    + '\'' + getsPushedIntoSF[final_i].Industry + '\'' + ', '                       // nvarchar(50)
-                    + getsPushedIntoSF[final_i].LLDB_Date_Added + ', '                              // date
-                    + getsPushedIntoSF[final_i].LLDB_Last_Updated + ', '                            // date
-                    + '\'' + getsPushedIntoSF[final_i].Currently_Assigned_Broker + '\'' + ', '      // nvarchar(50) <-- change to Id??
-                    + '\'' + getsPushedIntoSF[final_i].PRIMARY_CONTACT_FIRST_NAME + '\'' + ', '     // nvarchar(50)
-                    + '\'' + getsPushedIntoSF[final_i].PRIMARY_CONTACT_LAST_NAME + '\'' + ', '      // nvarchar(50)
-                    + '\'' + getsPushedIntoSF[final_i].PRIMARY_CONTACT_TITLE?.replace('\'', '`') + '\'' + ', '          // nvarchar(50)
-                    + '\'' + getsPushedIntoSF[final_i].PRIMARY_CONTACT_PHONE + '\'' + ', '          // nvarchar(50)
-                    + '\'' + getsPushedIntoSF[final_i].PRIMARY_CONTACT_EMAIL + '\'' + ', '          // nvarchar(50)
-                    + '\'' + getsPushedIntoSF[final_i].PRIMARY_CONTACT_ADDRESS + '\'' + ', '        // nvarchar(50)
-                    + '\'' + getsPushedIntoSF[final_i].PRIMARY_CONTACT_CITY + '\'' + ', '           // nvarchar(50)
-                    + '\'' + getsPushedIntoSF[final_i].PRIMARY_CONTACT_STATE + '\'' + ', '          // nvarchar(50)
-                    + '\'' + getsPushedIntoSF[final_i].PRIMARY_CONTACT_ZIP_CODE + '\'' + ', '       // nvarchar(50)
-                    + '\'' + getsPushedIntoSF[final_i].CONTACT_RECORD_TYPE_ID + '\'' + ', '         // nvarchar(50)
-                    + '\'' + getsPushedIntoSF[final_i].TENANT_RECORD_TYPE_ID + '\'' + ', '          // nvarchar(50)
-                    + '\'' + getsPushedIntoSF[final_i].ACCOUNT_RECORD_TYPE_ID + '\'' + ', '         // nvarchar(50)
-                    + '\'' + getsPushedIntoSF[final_i].REONOMY_ID + '\'' + ', '                     // nvarchar(50)
-                    + getsPushedIntoSF[final_i].CCD_ID + ', '                                             // int
-                    + '\'' + getsPushedIntoSF[final_i].Account_Name + '\''
-                    + '),'
-            }
-            finalValueString = finalValueString.substring(0, finalValueString.length - 1)
-
-            Db.insertFinalLLDB(finalValueString)
-        }
-
-
-
-
-
-
-
-
-
-
-
-    // get the LLDB json file saved
-    let containerName = 'charter-lldb'
-    let blobName = 'charter-lldb/data.json'
-    let streamLength = JSON.stringify(getsPushedIntoSF).length // string length, not the array length
-    let stream = getStream(JSON.stringify(getsPushedIntoSF))
-
-    let newString = '\'' + JSON.stringify(getsPushedIntoSF) + '\''
-    // console.log('---->', newString)
-
-    // save json data into azure
-    // await Db.inserJsontLLDB(newString)
-    await Db.inserJsontLLDB()
-
-    blobService.createBlockBlobFromStream(
-        containerName,
-        blobName,
-        stream,
-        streamLength,
-        (err) => {
-            if (!err) {
-                // res.send({
-                //     message: 'LLDB json data have been saved.'
-                // })
-                // get my csv
-                converter.json2csv(getsPushedIntoSF)
-                    .then((csv) => {
-                        // console.log('csv = ', csv)
-                        //this statement tells the browser what type of data is supposed to download and force it to download
-                        res.writeHead(200, {
-                            'Content-Type': 'text/csv',
-                            'Content-Disposition': 'attachment; filename=final_lldb_export.csv'
-                        });
-                        // whereas this part is in charge of telling what data should be parsed and be downloaded
-                        res.end(csv, "binary");
-                    })
-            } else {
-                res.send({
-                    message: 'ERROR: Something went wrong.'
-                })
-            }
-        }
-    )
-})
-
-
-
-
-
 
 
 app.listen(PORT, HOST, () => {
